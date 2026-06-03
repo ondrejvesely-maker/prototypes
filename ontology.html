@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actian — Ontology</title>
+<style>
+:root {
+  --teal: #00B5AD;
+  --teal-dark: #009990;
+  --teal-light: #e0f7f6;
+  --text: #1a1f2e;
+  --text-2: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f8f9fa;
+  --white: #ffffff;
+  --green: #10b981;
+  --green-bg: #d1fae5;
+  --amber: #f59e0b;
+  --amber-bg: #fffbeb;
+  --red: #ef4444;
+  --red-bg: #fee2e2;
+  --violet: #7c3aed;
+  --violet-bg: #f0ebff;
+  --sb-bg: #0e1117;
+  --sb-text: #c9d1d9;
+  --sb-muted: #6b7280;
+  --sb-hover: rgba(255,255,255,0.05);
+  --sb-active: rgba(0,181,173,0.13);
+  --sb-border: rgba(255,255,255,0.07);
+  --shadow: 0 2px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.14);
+  --radius: 7px;
+  --radius-lg: 10px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); }
+
+/* ─── SHELL ─── */
+.shell { display: flex; height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 256px; flex-shrink: 0;
+  background: var(--sb-bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sb-head {
+  padding: 15px 14px;
+  border-bottom: 1px solid var(--sb-border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sb-logo { line-height: 1; }
+.sb-module { font-size: 9px; color: var(--teal); opacity: 0.7; letter-spacing: 1px; text-transform: uppercase; }
+
+.sb-new {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--teal); border: none; border-radius: 7px;
+  color: white; font-size: 12px; font-weight: 600; padding: 6px 11px;
+  cursor: pointer; transition: background 0.12s; white-space: nowrap;
+}
+.sb-new:hover { background: var(--teal-dark); }
+
+.sb-search { padding: 10px 12px; border-bottom: 1px solid var(--sb-border); flex-shrink: 0; }
+.sb-search input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; padding: 7px 10px; font-size: 12px; color: var(--sb-text); outline: none;
+  transition: border-color 0.12s;
+}
+.sb-search input::placeholder { color: var(--sb-muted); }
+.sb-search input:focus { border-color: var(--teal); }
+
+.sb-body { flex: 1; overflow-y: auto; padding: 6px 0 8px; }
+.sb-body::-webkit-scrollbar { width: 3px; }
+.sb-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+.sb-sec { padding: 14px 14px 4px; }
+.sb-sec-label { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--sb-muted); }
+
+.sb-nav-item {
+  padding: 8px 12px; margin: 1px 6px; border-radius: 6px; cursor: pointer;
+  display: flex; align-items: center; gap: 9px;
+  transition: background 0.12s; border: none; background: none; width: calc(100% - 12px);
+  text-align: left;
+}
+.sb-nav-item:hover { background: var(--sb-hover); }
+.sb-nav-item.active { background: var(--sb-active); border-left: 2px solid var(--teal); padding-left: 10px; }
+.sb-nav-icon { width: 15px; height: 15px; color: var(--sb-muted); flex-shrink: 0; fill: currentColor; }
+.sb-nav-item.active .sb-nav-icon { color: var(--teal); }
+.sb-nav-label { font-size: 12px; color: var(--sb-text); }
+.sb-nav-item.active .sb-nav-label { color: var(--teal); font-weight: 600; }
+.sb-nav-count {
+  margin-left: auto; font-size: 10px; color: var(--sb-muted);
+  background: rgba(255,255,255,0.07); padding: 1px 6px; border-radius: 10px;
+}
+.sb-nav-count.alert { background: var(--red); color: white; }
+
+.sb-foot {
+  padding: 11px 14px; border-top: 1px solid var(--sb-border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.sb-avatar {
+  width: 28px; height: 28px; background: #f97316; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.sb-uname { font-size: 12px; color: var(--sb-text); }
+.sb-role { font-size: 10px; color: var(--sb-muted); }
+
+/* ─── MAIN ─── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+.topbar {
+  height: 52px; background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.breadcrumb { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+.bc-link { cursor: pointer; }
+.bc-link:hover { color: var(--teal); }
+.bc-sep { opacity: 0.35; }
+.bc-cur { color: var(--text); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.tb-btn {
+  width: 32px; height: 32px; background: none; border: 1px solid var(--border);
+  border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-2); transition: background 0.12s; font-size: 15px;
+}
+.tb-btn:hover { background: var(--bg); }
+.tb-avatar {
+  width: 32px; height: 32px; background: #f97316; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;
+}
+.screen-badge {
+  font-size: 11px; background: var(--teal-light); color: var(--teal-dark);
+  padding: 4px 12px; border-radius: 20px; font-weight: 600;
+}
+
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border-radius: var(--radius); font-size: 13px; font-weight: 600; cursor: pointer;
+  border: none; transition: all 0.12s; white-space: nowrap;
+}
+.btn-primary { background: var(--teal); color: white; }
+.btn-primary:hover { background: var(--teal-dark); }
+.btn-secondary { background: white; color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+.btn-ghost { background: transparent; color: var(--teal); }
+.btn-ghost:hover { background: var(--teal-light); }
+.btn-danger { background: var(--red); color: white; }
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+
+/* ─── TAGS ─── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600;
+}
+.tag-default { background: #f1f3f5; color: var(--text-2); }
+.tag-teal { background: var(--teal-light); color: var(--teal-dark); }
+.tag-green { background: var(--green-bg); color: var(--green); }
+.tag-amber { background: var(--amber-bg); color: var(--amber); }
+.tag-red { background: var(--red-bg); color: var(--red); }
+.tag-violet { background: var(--violet-bg); color: var(--violet); }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); padding: 20px;
+  box-shadow: var(--shadow);
+}
+
+/* ─── SEARCH BAR ─── */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: white; border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 8px 12px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.search-bar:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,181,173,0.1); }
+.search-bar input { border: none; outline: none; font-size: 13px; color: var(--text); flex: 1; background: transparent; }
+.search-bar svg { width: 14px; height: 14px; color: var(--text-2); flex-shrink: 0; }
+
+/* ─── TABS ─── */
+.tabs { display: flex; border-bottom: 1px solid var(--border); gap: 0; }
+.tab {
+  padding: 10px 16px; font-size: 13px; font-weight: 500; cursor: pointer;
+  color: var(--text-2); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.12s; background: none; border-top: none; border-left: none; border-right: none;
+}
+.tab:hover { color: var(--text); }
+.tab.active { color: var(--teal); border-bottom-color: var(--teal); font-weight: 600; }
+.tab-count {
+  display: inline-block; background: #f1f3f5; color: var(--text-2);
+  border-radius: 10px; font-size: 10px; font-weight: 700; padding: 0 5px; margin-left: 4px;
+}
+
+/* ─── FORM ELEMENTS ─── */
+.form-group { margin-bottom: 18px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text-2); margin-bottom: 5px; display: block; }
+.form-label .req { color: var(--red); }
+.form-input {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px; outline: none; color: var(--text);
+  transition: border-color 0.12s, box-shadow 0.12s; background: white;
+}
+.form-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,181,173,0.1); }
+.form-input.readonly { background: var(--bg); color: var(--text-2); }
+.form-select {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border);
+  border-radius: var(--radius); font-size: 13px; outline: none; background: white;
+  color: var(--text); cursor: pointer;
+}
+.form-hint { font-size: 11px; color: var(--text-2); margin-top: 4px; }
+
+/* ─── SCREENS ─── */
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.active { display: flex; }
+
+/* ═══ SCREEN 1 — CONCEPT BROWSER ═══ */
+.browser-toolbar {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.view-toggle {
+  display: flex; border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden;
+}
+.view-btn {
+  padding: 6px 10px; border: none; background: white; cursor: pointer;
+  color: var(--text-2); transition: all 0.12s; display: flex; align-items: center; font-size: 14px;
+}
+.view-btn.active { background: var(--teal-light); color: var(--teal-dark); }
+.view-btn + .view-btn { border-left: 1px solid var(--border); }
+
+.select-sm {
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius);
+  font-size: 12px; background: white; color: var(--text); outline: none; cursor: pointer;
+}
+
+.alert-bar {
+  background: var(--amber-bg); border: 1px solid #fcd34d; border-radius: var(--radius-lg);
+  padding: 11px 16px; margin-bottom: 16px; display: flex; align-items: center; gap: 10px; cursor: pointer;
+}
+.alert-bar:hover { border-color: var(--amber); }
+.alert-bar-text { flex: 1; font-size: 13px; color: #78350f; }
+.alert-bar-text strong { font-weight: 700; }
+
+.entity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 12px; }
+.entity-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 16px; cursor: pointer; transition: all 0.12s; box-shadow: var(--shadow);
+  position: relative;
+}
+.entity-card:hover { border-color: var(--teal); box-shadow: 0 0 0 3px var(--teal-light); }
+.entity-card.has-conflict { border-color: #fcd34d; }
+.entity-card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.entity-icon {
+  width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; font-size: 16px;
+}
+.entity-icon.teal { background: var(--teal-light); }
+.entity-icon.green { background: var(--green-bg); }
+.entity-icon.amber { background: var(--amber-bg); }
+.entity-icon.violet { background: var(--violet-bg); }
+.entity-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+.entity-domain { font-size: 11px; color: var(--text-2); }
+.entity-desc { font-size: 12px; color: var(--text-2); line-height: 1.55; margin-bottom: 12px; }
+.entity-foot { display: flex; align-items: center; justify-content: space-between; }
+.entity-attrs { font-size: 11px; color: var(--text-2); }
+.conflict-chip {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--amber-bg); color: var(--amber); border-radius: 20px;
+  font-size: 10px; font-weight: 700; padding: 2px 7px;
+}
+.add-card {
+  background: var(--bg); border: 1.5px dashed var(--border); border-radius: var(--radius-lg);
+  padding: 16px; cursor: pointer; transition: all 0.12s; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; min-height: 148px; gap: 6px;
+}
+.add-card:hover { border-color: var(--teal); background: var(--teal-light); }
+.add-card-icon { font-size: 26px; color: var(--text-2); }
+.add-card-label { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.add-card-sub { font-size: 11px; color: var(--text-2); opacity: 0.7; }
+
+/* Graph */
+.graph-wrap {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  box-shadow: var(--shadow); overflow: hidden; position: relative;
+}
+.graph-hint { font-size: 11px; color: var(--text-2); margin-top: 8px; }
+.graph-legend {
+  position: absolute; bottom: 14px; left: 16px;
+  display: flex; gap: 14px; font-size: 11px; color: var(--text-2);
+}
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+
+/* ═══ SCREEN 2 — DETAIL ═══ */
+.detail-header {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 20px 24px; margin-bottom: 20px; box-shadow: var(--shadow);
+}
+.detail-title-row { display: flex; align-items: center; gap: 10px; margin: 8px 0 10px; flex-wrap: wrap; }
+.detail-title { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.detail-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--text-2); flex-wrap: wrap; }
+
+.detail-layout { display: grid; grid-template-columns: 1fr 268px; gap: 18px; }
+
+.rel-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 7px;
+  background: white; transition: border-color 0.12s; cursor: pointer;
+}
+.rel-row:hover { border-color: var(--teal); }
+.rel-row.ai-row { border-color: #c4b5fd; background: #fdfbff; }
+.rel-type-pill {
+  font-size: 11px; font-weight: 600; color: var(--teal-dark);
+  background: var(--teal-light); padding: 2px 8px; border-radius: 20px; flex-shrink: 0;
+}
+.rel-type-pill.ai { background: var(--violet-bg); color: var(--violet); }
+.rel-type-pill.conflict { background: var(--amber-bg); color: var(--amber); }
+.rel-arrow { font-size: 12px; color: var(--text-2); }
+.rel-target { font-weight: 600; font-size: 13px; flex: 1; }
+.rel-source { font-size: 11px; color: var(--text-2); flex-shrink: 0; }
+.rel-source.ai { color: var(--violet); }
+
+.asset-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 7px; background: white;
+}
+.asset-icon {
+  width: 28px; height: 28px; background: var(--bg); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;
+}
+.asset-name { font-size: 13px; font-weight: 600; flex: 1; }
+.asset-sub { font-size: 11px; color: var(--text-2); }
+
+.info-panel { display: flex; flex-direction: column; gap: 14px; }
+.info-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-2); margin-bottom: 4px; }
+.info-value { font-size: 13px; font-weight: 500; color: var(--text); }
+.info-value.green { color: var(--green); display: flex; align-items: center; gap: 4px; }
+.conf-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px; }
+.conf-fill { height: 100%; background: var(--green); border-radius: 2px; }
+.divider { border: none; border-top: 1px solid var(--border); }
+
+.tab-content { padding-top: 18px; }
+.section-title { font-size: 13px; font-weight: 700; color: var(--text); margin-bottom: 10px; }
+.attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+
+/* ═══ SCREEN 3 — ADD RELATIONSHIP ═══ */
+.form-layout { display: grid; grid-template-columns: 1fr 320px; gap: 22px; align-items: start; }
+
+.ai-suggest {
+  background: var(--violet-bg); border: 1px solid #c4b5fd;
+  border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 18px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.ai-suggest-icon { font-size: 18px; flex-shrink: 0; }
+.ai-suggest-body { flex: 1; font-size: 13px; color: #3b0764; }
+.ai-suggest-body strong { font-weight: 700; }
+.ai-suggest-actions { display: flex; gap: 7px; margin-top: 8px; }
+
+.rel-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+.rel-opt {
+  padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; transition: all 0.12s; background: white;
+}
+.rel-opt:hover { border-color: var(--teal); }
+.rel-opt.selected { border-color: var(--teal); background: var(--teal-light); }
+.rel-opt-name { font-size: 13px; font-weight: 600; }
+.rel-opt-desc { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+.rel-opt.selected .rel-opt-desc { color: var(--teal-dark); }
+
+.preview-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 18px; box-shadow: var(--shadow); position: sticky; top: 0;
+}
+.preview-diagram { text-align: center; padding: 16px 0; }
+.preview-node {
+  display: inline-block; padding: 7px 16px; border-radius: var(--radius);
+  font-size: 13px; font-weight: 700;
+}
+.preview-node.source { background: var(--teal-light); color: var(--teal-dark); }
+.preview-node.target { background: var(--bg); border: 1px solid var(--border); color: var(--text); }
+.preview-connector {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0; color: var(--text-2);
+}
+.preview-connector-line { width: 1px; height: 16px; background: var(--border); }
+.preview-connector-label { font-size: 10px; font-weight: 600; background: #f1f3f5; padding: 2px 8px; border-radius: 20px; }
+
+/* ═══ SCREEN 4 — CONFLICT ═══ */
+.conflict-banner {
+  background: var(--amber-bg); border: 1px solid #fcd34d;
+  border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.conflict-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.conflict-card.left { border-top: 3px solid var(--teal); }
+.conflict-card.right { border-top: 3px solid var(--green); }
+.conflict-domain { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 5px; }
+.conflict-domain.teal { color: var(--teal); }
+.conflict-domain.green { color: var(--green); }
+.conflict-concept { font-size: 18px; font-weight: 700; margin-bottom: 10px; }
+.conflict-def {
+  font-size: 13px; color: var(--text-2); line-height: 1.65;
+  background: var(--bg); padding: 10px 12px; border-radius: var(--radius); margin-bottom: 10px;
+}
+.conflict-diff {
+  border-left: 3px solid var(--amber); padding: 6px 10px;
+  font-size: 12px; font-weight: 600; color: var(--amber); background: var(--amber-bg);
+  border-radius: 0 4px 4px 0; margin-bottom: 10px;
+}
+.impact-card {
+  background: white; border: 1px solid var(--border); border-left: 3px solid var(--red);
+  border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 18px;
+  box-shadow: var(--shadow);
+}
+.resolution-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 18px; box-shadow: var(--shadow);
+}
+.res-option {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  cursor: pointer; margin-bottom: 8px; transition: all 0.12s;
+}
+.res-option:hover { border-color: var(--teal); background: var(--teal-light); }
+.res-icon { font-size: 20px; flex-shrink: 0; }
+.res-label { font-size: 13px; font-weight: 600; }
+.res-desc { font-size: 11px; color: var(--text-2); }
+
+/* ═══ SCREEN 5 — QUEUE ═══ */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
+.stat-card {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 14px 16px; box-shadow: var(--shadow);
+}
+.stat-num { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; }
+.stat-num.red { color: var(--red); }
+.stat-num.amber { color: var(--amber); }
+.stat-num.violet { color: var(--violet); }
+.stat-num.green { color: var(--green); }
+.stat-lbl { font-size: 11px; color: var(--text-2); margin-top: 1px; }
+
+.filter-row { display: flex; gap: 7px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-pill {
+  padding: 5px 12px; border-radius: 20px; border: 1px solid var(--border);
+  font-size: 12px; font-weight: 600; cursor: pointer; background: white;
+  color: var(--text-2); transition: all 0.12s;
+}
+.filter-pill.active { background: var(--teal); color: white; border-color: var(--teal); }
+.filter-pill:hover:not(.active) { border-color: var(--teal); color: var(--teal); }
+
+.q-item {
+  background: white; border: 1px solid var(--border); border-radius: var(--radius-lg);
+  padding: 14px 16px; margin-bottom: 9px; display: flex; gap: 13px; align-items: flex-start;
+  box-shadow: var(--shadow); transition: border-color 0.12s;
+}
+.q-item:hover { border-color: var(--teal); }
+.q-item.conflict-item { border-color: #fcd34d; }
+.q-icon {
+  width: 36px; height: 36px; border-radius: 8px; display: flex;
+  align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.q-icon.ai { background: var(--violet-bg); }
+.q-icon.user { background: var(--teal-light); }
+.q-icon.conflict { background: var(--amber-bg); }
+.q-body { flex: 1; min-width: 0; }
+.q-title { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+.q-meta { font-size: 11px; color: var(--text-2); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.q-evidence {
+  font-size: 12px; color: var(--text-2); background: var(--bg);
+  padding: 6px 10px; border-radius: var(--radius); border-left: 2px solid var(--border); line-height: 1.5;
+}
+.diff-row { display: flex; gap: 7px; margin-top: 7px; }
+.diff-before, .diff-after {
+  flex: 1; padding: 7px 10px; border-radius: var(--radius); font-size: 12px; line-height: 1.5;
+}
+.diff-before { background: var(--red-bg); border: 1px solid #fca5a5; color: #7f1d1d; }
+.diff-after { background: var(--green-bg); border: 1px solid #6ee7b7; color: #064e3b; }
+.diff-lbl { font-size: 10px; font-weight: 700; opacity: 0.55; margin-bottom: 3px; }
+.q-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; padding-top: 2px; }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo">
+        <!-- Actian official horizontal logo, adapted for dark sidebar -->
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.05 81.36" style="display:block;width:130px;height:auto;margin-bottom:6px">
+          <defs><style>.al1{fill:#ffffff;}.al2{fill:rgba(255,255,255,0.65);}.al3{fill:rgba(255,255,255,0.35);}</style></defs>
+          <!-- Wordmark paths (Actian letters) -->
+          <path class="al1" d="M134.61,17.71a.37.37,0,0,1,.71,0l21.45,43.56a.39.39,0,0,1-.38.62h-8.61a1.23,1.23,0,0,1-1-.62l-2.68-5.52a1.22,1.22,0,0,0-1-.62H126.76a1.23,1.23,0,0,0-1,.62l-2.68,5.52a1.21,1.21,0,0,1-1,.62h-8.55a.4.4,0,0,1-.39-.62Zm5,29.44a.4.4,0,0,0,.39-.63l-4.82-9.9c-.16-.34-.43-.34-.6,0l-4.76,9.9a.41.41,0,0,0,.39.63Z"/>
+          <path class="al1" d="M308.14,17.71a.37.37,0,0,1,.71,0L330.3,61.27a.39.39,0,0,1-.38.62h-8.61a1.23,1.23,0,0,1-1-.62l-2.68-5.52a1.21,1.21,0,0,0-1-.62H300.29a1.2,1.2,0,0,0-1,.62l-2.69,5.52a1.21,1.21,0,0,1-1,.62h-8.55a.4.4,0,0,1-.39-.62Zm5,29.44a.4.4,0,0,0,.39-.63l-4.81-9.9c-.17-.34-.44-.34-.61,0l-4.76,9.9a.41.41,0,0,0,.39.63Z"/>
+          <path class="al1" d="M205.12,54.16a.69.69,0,0,1,0,1l0,0a22.54,22.54,0,0,1-16.73,7.39c-12.61,0-22.85-9.2-22.85-21.87s10.24-21.93,22.85-21.93A22.49,22.49,0,0,1,205,26.09l0,0a.71.71,0,0,1,0,1l0,0-5.32,4.51h0a.71.71,0,0,1-1,0l0,0a14.37,14.37,0,0,0-10.32-4.33,13.19,13.19,0,0,0-13.46,13.41A13.13,13.13,0,0,0,188.37,54a14.39,14.39,0,0,0,10.38-4.37l0,0a.68.68,0,0,1,.93,0l.1.08,5.25,4.45Z"/>
+          <path class="al1" d="M227.27,28.65a.7.7,0,0,0-.69-.7H216.45a.69.69,0,0,1-.69-.69V20.12a.69.69,0,0,1,.69-.69H247.3a.69.69,0,0,1,.69.69v7.14a.69.69,0,0,1-.69.69h-10a.7.7,0,0,0-.69.7V61.2a.7.7,0,0,1-.7.69h-8a.69.69,0,0,1-.7-.69Z"/>
+          <path class="al1" d="M264.62,20.12a.69.69,0,0,1,.69-.69h8a.69.69,0,0,1,.69.69V61.2a.69.69,0,0,1-.69.69h-8a.69.69,0,0,1-.69-.69Z"/>
+          <path class="al1" d="M371.81,20.12a.69.69,0,0,1,.69-.69h7.88a.69.69,0,0,1,.69.69v42c0,.76-.46,1-1,.46L353.59,38.75c-.57-.51-1-.3-1,.46v22a.69.69,0,0,1-.69.69H344a.69.69,0,0,1-.69-.69v-42c0-.77.46-1,1-.46l26.46,23.91c.57.51,1,.31,1-.45Z"/>
+          <!-- Logo mark (A symbol) - three-layer -->
+          <path class="al1" d="M85.29,63.53A1.16,1.16,0,0,0,84.4,63h-13a1.16,1.16,0,0,1-.89-.51L48.07,24.34a.32.32,0,0,0-.6,0L25,62.51a1.16,1.16,0,0,1-.89.51h-13a1.17,1.17,0,0,0-.9.51l-3,5.09c-.17.28,0,.51.29.51h20.1a1.16,1.16,0,0,0,.89-.51L47.47,36.41a.32.32,0,0,1,.6,0L67,68.62a1.13,1.13,0,0,0,.89.51H88c.33,0,.46-.23.29-.51Z"/>
+          <path class="al2" d="M95.47,80.85c.17.28,0,.51-.29.51H60.9a1.13,1.13,0,0,1-.89-.51L48.07,60.54a.32.32,0,0,0-.6,0L35.53,80.85a1.13,1.13,0,0,1-.89.51H.36c-.32,0-.45-.23-.29-.51l3-5.1a1.12,1.12,0,0,1,.89-.5H31.15a1.16,1.16,0,0,0,.89-.51L47.47,48.48a.32.32,0,0,1,.6,0L63.51,74.74a1.13,1.13,0,0,0,.89.51H91.59a1.15,1.15,0,0,1,.89.5Z"/>
+          <path class="al2" d="M48.07,72.61a.32.32,0,0,0-.6,0l-4.84,8.24c-.17.28,0,.51.29.51h9.7c.33,0,.46-.23.3-.51Z"/>
+          <path class="al3" d="M47.47.21a.32.32,0,0,1,.6,0l33,56.18c.17.28,0,.51-.29.51H74.89a1.16,1.16,0,0,1-.89-.51L48.07,12.28a.32.32,0,0,0-.6,0L21.54,56.39a1.15,1.15,0,0,1-.89.51H14.74c-.33,0-.46-.23-.29-.51Z"/>
+        </svg>
+        <span class="sb-module">DATA INTELLIGENCE · Ontology</span>
+      </div>
+      <button class="sb-new" onclick="showScreen('add-rel')">＋ New</button>
+    </div>
+    <div class="sb-search">
+      <input type="text" placeholder="Search concepts…">
+    </div>
+    <div class="sb-body">
+      <div class="sb-sec">
+        <div class="sb-sec-label">Ontology</div>
+      </div>
+      <button class="sb-nav-item active" onclick="showScreen('browser')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><path d="M2 3h5v2H2V3zm0 4h5v2H2V7zm0 4h5v2H2v-2zm7-8h5v2H9V3zm0 4h5v2H9V7zm0 4h5v2H9v-2z"/></svg>
+        <span class="sb-nav-label">Concept browser</span>
+      </button>
+      <button class="sb-nav-item" onclick="showScreen('queue')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.5 4h1v4.5l3 1.8-.5.87-3.5-2.1V5z"/></svg>
+        <span class="sb-nav-label">Review queue</span>
+        <span class="sb-nav-count alert">7</span>
+      </button>
+
+      <div class="sb-sec">
+        <div class="sb-sec-label">Catalog</div>
+      </div>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h8v2H2v-2z"/></svg>
+        <span class="sb-nav-label">Datasets</span>
+      </button>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
+        <span class="sb-nav-label">Lineage</span>
+      </button>
+
+      <div class="sb-sec">
+        <div class="sb-sec-label">AI Agents</div>
+      </div>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><path d="M8 1l2 4h4l-3 3 1 4-4-2-4 2 1-4L2 5h4z"/></svg>
+        <span class="sb-nav-label">Data Steward Agent</span>
+      </button>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16"><circle cx="8" cy="8" r="6" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3l2 2" stroke="currentColor" stroke-width="1.5" fill="none"/></svg>
+        <span class="sb-nav-label">Explorer Agent</span>
+      </button>
+    </div>
+    <div class="sb-foot">
+      <div class="sb-avatar">OV</div>
+      <div>
+        <div class="sb-uname">Ondrej Vesely</div>
+        <div class="sb-role">Staff PM · AI</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main class="main">
+
+    <!-- ════════════════════════════════════════
+         SCREEN 1 — CONCEPT BROWSER
+    ═════════════════════════════════════════ -->
+    <div id="screen-browser" class="screen active">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link bc-home">Actian</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Ontology</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 1 · Concept browser</span>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="browser-toolbar">
+          <div class="search-bar" style="flex:1;max-width:380px">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+            <input type="text" placeholder="Search concepts, entities, attributes…">
+          </div>
+          <select class="select-sm"><option>All domains</option><option>Finance</option><option>Marketing</option><option>Operations</option></select>
+          <select class="select-sm"><option>All types</option><option>Business Entity</option><option>Business Attribute</option></select>
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('list')">☰</button>
+            <button class="view-btn" onclick="switchView('graph')">⬡</button>
+          </div>
+          <span style="font-size:12px;color:var(--text-2);margin-left:auto">42 concepts · 3 domains · <strong style="color:var(--amber)">2 conflicts</strong></span>
+        </div>
+
+        <!-- LIST VIEW -->
+        <div id="view-list">
+          <div class="alert-bar" onclick="showScreen('conflict')">
+            <span style="font-size:18px">⚠️</span>
+            <div class="alert-bar-text">
+              <strong>2 semantic conflicts detected —</strong> Finance and Marketing define "Active Customer" differently · 3 datasets affected
+            </div>
+            <button class="btn btn-sm" style="background:var(--amber);color:white;flex-shrink:0">Review conflicts →</button>
+          </div>
+
+          <div class="entity-grid">
+            <div class="entity-card" onclick="showScreen('detail')">
+              <div class="entity-card-head">
+                <div class="entity-icon teal">👤</div>
+                <div><div class="entity-name">Customer</div><div class="entity-domain">Finance · Business Entity</div></div>
+              </div>
+              <div class="entity-desc">An individual or organisation that has entered into a commercial relationship and holds at least one active account.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">12 attributes · 8 relationships</span>
+                <span class="tag tag-green">✓ Certified</span>
+              </div>
+            </div>
+
+            <div class="entity-card has-conflict" onclick="showScreen('conflict')">
+              <div class="conflict-chip">⚠ Conflict</div>
+              <div class="entity-card-head">
+                <div class="entity-icon amber">⚡</div>
+                <div><div class="entity-name">Active Customer</div><div class="entity-domain">Finance / Marketing · Entity</div></div>
+              </div>
+              <div class="entity-desc">Definition differs between Finance (billing-based, 90 days) and Marketing (engagement-based, 60 days).</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">2 definitions · 3 datasets</span>
+                <span class="tag tag-amber">Pending</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon teal">📦</div>
+                <div><div class="entity-name">Order</div><div class="entity-domain">Operations · Business Entity</div></div>
+              </div>
+              <div class="entity-desc">A confirmed request from a Customer to purchase one or more Products, assigned an order ID at creation.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">9 attributes · 5 relationships</span>
+                <span class="tag tag-green">✓ Certified</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon green">💰</div>
+                <div><div class="entity-name">Revenue</div><div class="entity-domain">Finance · Business Entity</div></div>
+              </div>
+              <div class="entity-desc">Total recognised income from customer transactions in a given period, net of taxes and inter-company eliminations.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">6 attributes · 4 relationships</span>
+                <span class="tag tag-default">Draft</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon teal">🏷️</div>
+                <div><div class="entity-name">Product</div><div class="entity-domain">Operations · Business Entity</div></div>
+              </div>
+              <div class="entity-desc">A good or service offered for sale, identified by a unique SKU with at least one price tier.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">14 attributes · 6 relationships</span>
+                <span class="tag tag-green">✓ Certified</span>
+              </div>
+            </div>
+
+            <div class="add-card" onclick="showScreen('add-rel')">
+              <div class="add-card-icon">＋</div>
+              <div class="add-card-label">Add new concept</div>
+              <div class="add-card-sub">Entity or attribute</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRAPH VIEW -->
+        <div id="view-graph" style="display:none">
+          <div class="graph-wrap" style="height:490px">
+            <svg viewBox="0 0 900 480" style="width:100%;height:100%">
+              <line x1="450" y1="240" x2="200" y2="120" stroke="#e5e7eb" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="700" y2="120" stroke="#e5e7eb" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="200" y2="360" stroke="#e5e7eb" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="700" y2="360" stroke="#e5e7eb" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="450" y2="90" stroke="#fcd34d" stroke-width="2" stroke-dasharray="5,3"/>
+              <text x="310" y="165" font-size="10" fill="#9ca3af" text-anchor="middle">places</text>
+              <text x="592" y="165" font-size="10" fill="#9ca3af" text-anchor="middle">Calculated from</text>
+              <text x="302" y="315" font-size="10" fill="#9ca3af" text-anchor="middle">Broader</text>
+              <text x="594" y="315" font-size="10" fill="#9ca3af" text-anchor="middle">has</text>
+              <text x="490" y="155" font-size="10" fill="#f59e0b" text-anchor="middle">⚠ Conflict</text>
+              <!-- Customer (centre) -->
+              <g onclick="showScreen('detail')" style="cursor:pointer">
+                <circle cx="450" cy="240" r="40" fill="#e0f7f6" stroke="#00B5AD" stroke-width="2"/>
+                <text x="450" y="236" font-size="12" font-weight="700" fill="#1a1f2e" text-anchor="middle">Customer</text>
+                <text x="450" y="250" font-size="10" fill="#6b7280" text-anchor="middle">Entity</text>
+              </g>
+              <!-- Order -->
+              <g style="cursor:pointer">
+                <circle cx="200" cy="120" r="32" fill="#e0f7f6" stroke="#00B5AD" stroke-width="1.5"/>
+                <text x="200" y="116" font-size="11" font-weight="600" fill="#1a1f2e" text-anchor="middle">Order</text>
+                <text x="200" y="129" font-size="10" fill="#6b7280" text-anchor="middle">Entity</text>
+              </g>
+              <!-- Revenue -->
+              <g style="cursor:pointer">
+                <circle cx="700" cy="120" r="32" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+                <text x="700" y="116" font-size="11" font-weight="600" fill="#1a1f2e" text-anchor="middle">Revenue</text>
+                <text x="700" y="129" font-size="10" fill="#6b7280" text-anchor="middle">Entity</text>
+              </g>
+              <!-- Active Customer (conflict) -->
+              <g onclick="showScreen('conflict')" style="cursor:pointer">
+                <circle cx="450" cy="90" r="30" fill="#fffbeb" stroke="#f59e0b" stroke-width="2" stroke-dasharray="5,3"/>
+                <text x="450" y="85" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Active</text>
+                <text x="450" y="97" font-size="10" font-weight="700" fill="#92400e" text-anchor="middle">Customer ⚠</text>
+              </g>
+              <!-- Account -->
+              <g style="cursor:pointer">
+                <circle cx="200" cy="360" r="30" fill="#f0ebff" stroke="#7c3aed" stroke-width="1.5"/>
+                <text x="200" y="356" font-size="11" font-weight="600" fill="#1a1f2e" text-anchor="middle">Account</text>
+                <text x="200" y="369" font-size="10" fill="#6b7280" text-anchor="middle">Entity</text>
+              </g>
+              <!-- Product -->
+              <g style="cursor:pointer">
+                <circle cx="700" cy="360" r="30" fill="#e0f7f6" stroke="#00B5AD" stroke-width="1.5"/>
+                <text x="700" y="356" font-size="11" font-weight="600" fill="#1a1f2e" text-anchor="middle">Product</text>
+                <text x="700" y="369" font-size="10" fill="#6b7280" text-anchor="middle">Entity</text>
+              </g>
+            </svg>
+            <div class="graph-legend">
+              <span><span class="legend-dot" style="background:#00B5AD"></span>Entity</span>
+              <span><span class="legend-dot" style="background:#10b981"></span>Certified</span>
+              <span><span class="legend-dot" style="background:#7c3aed"></span>AI-suggested</span>
+              <span><span class="legend-dot" style="background:#f59e0b"></span>Conflict</span>
+            </div>
+          </div>
+          <p class="graph-hint">Click any node to open the concept. Read-only — edit relationships in the concept detail view.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 2 — CONCEPT DETAIL
+    ═════════════════════════════════════════ -->
+    <div id="screen-detail" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-link">Finance</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Customer</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 2 · Concept detail</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('browser')">← Back</button>
+          <button class="btn btn-primary btn-sm" onclick="showScreen('add-rel')">+ Add relationship</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="detail-header">
+          <div style="font-size:12px;color:var(--text-2);margin-bottom:6px">
+            <span onclick="showScreen('browser')" style="cursor:pointer;color:var(--teal)">Ontology</span> › Finance › Customer
+          </div>
+          <div class="detail-title-row">
+            <span style="font-size:26px">👤</span>
+            <span class="detail-title">Customer</span>
+            <span class="tag tag-green" style="font-size:12px">✓ Certified</span>
+            <span class="tag tag-teal" style="font-size:12px">Business Entity</span>
+          </div>
+          <div class="detail-meta">
+            <span>Owner: <strong>Sarah Chen (Finance)</strong></span>
+            <span>Last validated: 14 May 2026</span>
+            <span>Domain: Finance</span>
+          </div>
+        </div>
+
+        <div class="detail-layout">
+          <div>
+            <div class="tabs">
+              <button class="tab active" onclick="switchTab(this,'tab-overview')">Overview</button>
+              <button class="tab" onclick="switchTab(this,'tab-relationships')">Relationships <span class="tab-count">8</span></button>
+              <button class="tab" onclick="switchTab(this,'tab-assets')">Linked assets <span class="tab-count">5</span></button>
+              <button class="tab" onclick="switchTab(this,'tab-lineage')">Lineage</button>
+            </div>
+
+            <div id="tab-overview" class="tab-content">
+              <div class="section-title">Definition</div>
+              <p style="font-size:14px;line-height:1.7;color:var(--text-2);margin-bottom:18px">An individual or organisation that has entered into a commercial relationship with the company and holds at least one active account. A Customer must have a verified billing address and an associated CustomerID in the CRM system.</p>
+              <div class="section-title">Business Attributes <span style="font-weight:400;color:var(--text-2)">(12)</span></div>
+              <div class="attr-grid">
+                <div class="asset-row"><div class="asset-icon">🔤</div><div><div class="asset-name">CustomerID</div><div class="asset-sub">String · Primary key</div></div><span class="tag tag-teal">ID</span></div>
+                <div class="asset-row"><div class="asset-icon">📧</div><div><div class="asset-name">EmailAddress</div><div class="asset-sub">String · PII</div></div><span class="tag tag-amber">PII</span></div>
+                <div class="asset-row"><div class="asset-icon">📅</div><div><div class="asset-name">CreatedDate</div><div class="asset-sub">DateTime</div></div></div>
+                <div class="asset-row"><div class="asset-icon">🌍</div><div><div class="asset-name">BillingCountry</div><div class="asset-sub">String · ISO 3166</div></div></div>
+              </div>
+            </div>
+
+            <div id="tab-relationships" class="tab-content" style="display:none">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <span class="section-title" style="margin:0">All relationships</span>
+                <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="showScreen('add-rel')">+ Add</button>
+              </div>
+              <div class="rel-row"><span class="rel-type-pill">places</span><span class="rel-arrow">→</span><span class="rel-target">Order</span><span class="tag tag-default" style="font-size:10px">one-to-many</span><span class="rel-source">👤 Human</span></div>
+              <div class="rel-row" onclick="showScreen('conflict')" style="cursor:pointer"><span class="rel-type-pill conflict">Broader</span><span class="rel-arrow">→</span><span class="rel-target">Active Customer</span><span class="tag tag-amber" style="font-size:10px">⚠ Conflict</span><span class="rel-source" style="color:var(--amber)">Review →</span></div>
+              <div class="rel-row"><span class="rel-type-pill">has</span><span class="rel-arrow">→</span><span class="rel-target">Account</span><span class="tag tag-default" style="font-size:10px">one-to-many</span><span class="rel-source">👤 Human</span></div>
+              <div class="rel-row ai-row"><span class="rel-type-pill ai">Related</span><span class="rel-arrow">→</span><span class="rel-target">Prospect</span><span class="tag tag-violet" style="font-size:10px">AI suggested</span><button class="btn btn-sm btn-secondary" onclick="showScreen('queue')">Review</button></div>
+              <div class="rel-row"><span class="rel-type-pill">Calculated from</span><span class="rel-arrow">→</span><span class="rel-target">Revenue</span><span class="tag tag-default" style="font-size:10px">many-to-many</span><span class="rel-source">👤 Human</span></div>
+            </div>
+
+            <div id="tab-assets" class="tab-content" style="display:none">
+              <div class="section-title">Linked datasets and fields</div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">crm.customers</div><div class="asset-sub">Snowflake · prod · 2.4M rows</div></div><span class="tag tag-green">✓ Certified</span></div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">dw.dim_customer</div><div class="asset-sub">Redshift · prod_dw · 2.1M rows</div></div><span class="tag tag-green">✓ Certified</span></div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">salesforce.contact</div><div class="asset-sub">Salesforce · 3.1M records</div></div><span class="tag tag-default">Manual link</span></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div style="flex:1"><div class="asset-name">Customer 360 Dashboard</div><div class="asset-sub">Tableau · Finance workspace</div></div><span class="tag tag-default">BI report</span></div>
+            </div>
+
+            <div id="tab-lineage" class="tab-content" style="display:none">
+              <div style="text-align:center;padding:48px 0;color:var(--text-2)">
+                <div style="font-size:32px;margin-bottom:8px">🔗</div>
+                <div style="font-weight:600;font-size:14px;margin-bottom:4px">Lineage view</div>
+                <div style="font-size:13px">End-to-end lineage from source systems through the ontology to BI reports.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right info panel -->
+          <div>
+            <div class="card" style="padding:16px">
+              <div class="info-panel">
+                <div>
+                  <div class="info-label">AI confidence</div>
+                  <div class="info-value" style="font-size:18px;font-weight:800;color:var(--green)">92%</div>
+                  <div class="conf-bar"><div class="conf-fill" style="width:92%"></div></div>
+                  <div style="font-size:11px;color:var(--text-2);margin-top:4px">340 agent interactions this month</div>
+                </div>
+                <hr class="divider">
+                <div><div class="info-label">Certification</div><div class="info-value green">✓ Certified — Finance</div></div>
+                <div><div class="info-label">Owner</div><div class="info-value">Sarah Chen</div></div>
+                <div><div class="info-label">Curators</div><div class="info-value">Data Governance Team</div></div>
+                <div><div class="info-label">Standard</div><div class="info-value">SKOS · skos:Concept</div></div>
+                <hr class="divider">
+                <div>
+                  <div class="info-label">Agent corrections (30d)</div>
+                  <div class="info-value" style="color:var(--violet)">3 proposals pending</div>
+                  <button class="btn btn-ghost btn-sm" style="padding-left:0;margin-top:6px" onclick="showScreen('queue')">View in queue →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 3 — ADD RELATIONSHIP
+    ═════════════════════════════════════════ -->
+    <div id="screen-add-rel" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-link" onclick="showScreen('detail')">Customer</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Add relationship</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 3 · Add relationship</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('detail')">Cancel</button>
+          <button class="btn btn-primary btn-sm">Save relationship</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="form-layout">
+          <div>
+            <div class="ai-suggest">
+              <div class="ai-suggest-icon">✨</div>
+              <div class="ai-suggest-body">
+                <strong>AI suggestion:</strong> "Customer" is <strong>Broader than</strong> "Loyalty Member" — based on 47 queries over the last 30 days where users navigated from Customer to Loyalty Member expecting a parent relationship.
+                <div class="ai-suggest-actions">
+                  <button class="btn btn-sm btn-primary" style="background:var(--violet)">Accept suggestion</button>
+                  <button class="btn btn-sm btn-secondary">Dismiss</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label">Source concept <span class="req">*</span></label>
+                <input class="form-input readonly" type="text" value="Customer" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Relationship type <span class="req">*</span></label>
+                <div class="rel-type-grid" id="relTypeGrid">
+                  <div class="rel-opt selected" onclick="selectRel(this)"><div class="rel-opt-name">Broader</div><div class="rel-opt-desc">Source is parent concept (SKOS)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Narrower</div><div class="rel-opt-desc">Source is child concept</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Related</div><div class="rel-opt-desc">Associative, symmetric (SKOS)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Not same as</div><div class="rel-opt-desc">Explicitly disjoint (OWL)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Calculated from</div><div class="rel-opt-desc">Derived metric relationship</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Custom…</div><div class="rel-opt-desc">Define a new type</div></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Target concept <span class="req">*</span></label>
+                <div class="search-bar" style="margin-bottom:8px">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+                  <input type="text" placeholder="Search concepts…" value="Loyalty Member">
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg);border-radius:var(--radius);border:1px solid var(--border)">
+                  <span style="font-size:18px">🎖️</span>
+                  <div><div style="font-weight:600;font-size:13px">Loyalty Member</div><div style="font-size:11px;color:var(--text-2)">Finance · Business Entity · Draft</div></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cardinality</label>
+                <select class="form-select"><option>Unspecified</option><option selected>One-to-many</option><option>Many-to-many</option><option>One-to-one</option></select>
+                <div class="form-hint">Descriptive only — not enforced in v1.</div>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Note (optional)</label>
+                <input class="form-input" type="text" placeholder="Rationale or context for this relationship…">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-card">
+            <div class="section-title">Preview</div>
+            <div class="preview-diagram">
+              <div class="preview-node source">Customer</div>
+              <div class="preview-connector">
+                <div class="preview-connector-line"></div>
+                <div class="preview-connector-label">Broader ↕ Narrower</div>
+                <div class="preview-connector-line"></div>
+              </div>
+              <div class="preview-node target">Loyalty Member</div>
+            </div>
+            <hr class="divider">
+            <div style="font-size:12px;color:var(--text-2);line-height:1.6">
+              <p><strong style="color:var(--text)">Inverse auto-created:</strong> A "Narrower" relationship from Loyalty Member → Customer will be created automatically.</p>
+              <p style="margin-top:8px"><strong style="color:var(--text)">Symmetry:</strong> No (directional)</p>
+              <p style="margin-top:4px"><strong style="color:var(--text)">Cardinality:</strong> One-to-many (descriptive)</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 4 — FEDERATION CONFLICT ★
+    ═════════════════════════════════════════ -->
+    <div id="screen-conflict" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur" style="color:var(--amber)">⚠ Conflict · Active Customer</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge" style="background:var(--amber-bg);color:var(--amber)">Screen 4 · Federation conflict</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('browser')">← Back</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="conflict-banner">
+          <span style="font-size:22px">⚠️</span>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:14px;color:#92400e">Two domains define "Active Customer" differently</div>
+            <div style="font-size:12px;color:#a16207;margin-top:2px">Detected June 1 2026 · 3 datasets affected · Used in 12 agent queries this week</div>
+          </div>
+          <button class="btn btn-sm btn-secondary">Notify owners</button>
+        </div>
+
+        <div class="conflict-grid">
+          <div class="conflict-card left">
+            <div class="conflict-domain teal">Finance domain</div>
+            <div class="conflict-concept">Active Customer</div>
+            <div class="conflict-def">A customer who holds at least one paid account with no churn event in the preceding 90 days. Churn is defined as voluntary cancellation or involuntary lapse due to non-payment. Calculated from the CRM "account_status" field.</div>
+            <div class="conflict-diff">90-day window · billing-based · CRM source</div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-2);margin-bottom:6px">Datasets</div>
+              <div class="asset-row" style="margin-bottom:5px"><div class="asset-icon">🗄️</div><div><div class="asset-name" style="font-size:12px">crm.active_customers</div><div class="asset-sub">Snowflake · 1.2M rows</div></div></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div><div class="asset-name" style="font-size:12px">Finance KPI Dashboard</div><div class="asset-sub">Tableau · 47 users</div></div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-2)">Owner: <strong>Sarah Chen</strong> · Updated 3 days ago</div>
+          </div>
+
+          <div class="conflict-card right">
+            <div class="conflict-domain green">Marketing domain</div>
+            <div class="conflict-concept">Active Customer</div>
+            <div class="conflict-def">A customer who has opened or clicked at least one marketing email, or visited a product page, in the past 60 days. Tracked via HubSpot. Includes free-tier users.</div>
+            <div class="conflict-diff">60-day window · engagement-based · HubSpot source</div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-2);margin-bottom:6px">Datasets</div>
+              <div class="asset-row" style="margin-bottom:5px"><div class="asset-icon">🗄️</div><div><div class="asset-name" style="font-size:12px">hubspot.engaged_contacts</div><div class="asset-sub">HubSpot · 2.8M records</div></div></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div><div class="asset-name" style="font-size:12px">Campaign Performance</div><div class="asset-sub">Looker · 23 users</div></div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-2)">Owner: <strong>Priya Naidu</strong> · Updated 1 week ago</div>
+          </div>
+        </div>
+
+        <div class="impact-card" style="margin-bottom:18px">
+          <div style="font-weight:700;font-size:14px;margin-bottom:6px">Why this matters</div>
+          <p style="font-size:13px;color:var(--text-2);line-height:1.7">The Data Steward Agent answered 12 queries about "active customers" this week. Without a canonical definition, answers differ by up to <strong style="color:var(--red)">1.6M customers</strong> depending on which dataset is consulted first. A Finance report and Marketing report run on the same day will give contradictory totals.</p>
+        </div>
+
+        <div class="resolution-card">
+          <div style="font-weight:700;font-size:15px;margin-bottom:4px">Resolve this conflict</div>
+          <div style="font-size:13px;color:var(--text-2);margin-bottom:16px">Choose how to handle the two definitions. All affected datasets and agents will be updated.</div>
+          <div class="res-option">
+            <div class="res-icon">👑</div>
+            <div style="flex:1"><div class="res-label">Use Finance definition as canonical</div><div class="res-desc">Marketing's version becomes a domain-local alias. Agents use Finance definition by default.</div></div>
+            <button class="btn btn-sm btn-secondary">Select</button>
+          </div>
+          <div class="res-option" style="border-color:var(--teal)">
+            <div class="res-icon">✂️</div>
+            <div style="flex:1"><div class="res-label">Split into two distinct concepts</div><div class="res-desc">Create "Active Customer (Finance)" and "Active Customer (Marketing)" with a "Not same as" relationship.</div></div>
+            <button class="btn btn-sm btn-primary">Select</button>
+          </div>
+          <div class="res-option">
+            <div class="res-icon">📅</div>
+            <div style="flex:1"><div class="res-label">Schedule a steward review</div><div class="res-desc">Notify Sarah Chen and Priya Naidu to align on a shared definition. Conflict stays open.</div></div>
+            <button class="btn btn-sm btn-secondary">Select</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 5 — STEWARD QUEUE
+    ═════════════════════════════════════════ -->
+    <div id="screen-queue" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Review queue</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 5 · Steward queue</span>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num red">7</div><div class="stat-lbl">Pending review</div></div>
+          <div class="stat-card"><div class="stat-num amber">2</div><div class="stat-lbl">Conflicts open</div></div>
+          <div class="stat-card"><div class="stat-num violet">5</div><div class="stat-lbl">AI-generated</div></div>
+          <div class="stat-card"><div class="stat-num green">23</div><div class="stat-lbl">Accepted this month</div></div>
+        </div>
+
+        <div class="filter-row">
+          <button class="filter-pill active" onclick="activePill(this)">All (7)</button>
+          <button class="filter-pill" onclick="activePill(this)">AI proposals (5)</button>
+          <button class="filter-pill" onclick="activePill(this)">User edits (2)</button>
+          <button class="filter-pill" onclick="activePill(this)">Conflicts (2)</button>
+          <button class="filter-pill" onclick="activePill(this)">Definitions (3)</button>
+          <button class="filter-pill" onclick="activePill(this)">Relationships (4)</button>
+        </div>
+
+        <!-- Q1 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">Definition update · <strong>Revenue</strong></div>
+            <div class="q-meta">Data Steward Agent · 2 hours ago <span class="tag tag-violet" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">Triggered by 8 user corrections where agents returned pre-tax revenue figures for APAC queries. Users consistently specified net-of-tax.</div>
+            <div class="diff-row">
+              <div class="diff-before"><div class="diff-lbl">BEFORE</div>Total recognised income from customer transactions in a given period.</div>
+              <div class="diff-after"><div class="diff-lbl">AFTER</div>Total recognised income from customer transactions in a given period, net of applicable taxes and excluding inter-company eliminations.</div>
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--red)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">New relationship · <strong>Customer → Related → Prospect</strong></div>
+            <div class="q-meta">Explorer Agent · 1 day ago <span class="tag tag-violet" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">34 queries navigated from "Customer" to "Prospect" expecting a semantic link. No relationship currently exists.</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <span style="background:var(--teal-light);color:var(--teal-dark);padding:4px 10px;border-radius:var(--radius);font-size:12px;font-weight:600">Customer</span>
+              <span style="font-size:12px;color:var(--text-2)">—— Related ——→</span>
+              <span style="background:var(--bg);border:1px solid var(--border);padding:4px 10px;border-radius:var(--radius);font-size:12px;font-weight:600">Prospect</span>
+              <span class="tag tag-default" style="font-size:10px">symmetric</span>
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--red)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q3 conflict -->
+        <div class="q-item conflict-item">
+          <div class="q-icon conflict">⚠️</div>
+          <div class="q-body">
+            <div class="q-title">Semantic conflict · <strong>Active Customer</strong></div>
+            <div class="q-meta">System detected · 3 days ago <span class="tag tag-amber" style="font-size:10px">Conflict</span></div>
+            <div class="q-evidence">Finance and Marketing define this concept differently. Agents returning inconsistent answers. 3 datasets affected.</div>
+          </div>
+          <div class="q-actions" style="flex-direction:row;padding-top:0">
+            <button class="btn btn-sm btn-secondary" onclick="showScreen('conflict')">Review →</button>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="q-item">
+          <div class="q-icon user">👤</div>
+          <div class="q-body">
+            <div class="q-title">Attribute added · <strong>Customer · SegmentCode</strong></div>
+            <div class="q-meta">Proposed by Jan Kovar · 2 days ago <span class="tag tag-teal" style="font-size:10px">User edit</span></div>
+            <div class="q-evidence">New attribute "SegmentCode" proposed to align Customer entity with engagement segmentation. Type: String · Values: ENTERPRISE / MID / SMB.</div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--red)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">New concept · <strong>Churn Event</strong></div>
+            <div class="q-meta">Data Steward Agent · 4 days ago <span class="tag tag-violet" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">"Churn Event" appears in 67 queries but has no canonical definition. Agent bootstrapped a draft from crm.churn_log table metadata.</div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--red)">Reject</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.sb-nav-item').forEach(n => n.classList.remove('active'));
+  if (['browser','detail','add-rel','conflict'].includes(name)) {
+    document.querySelectorAll('.sb-nav-item')[0].classList.add('active');
+  } else if (name === 'queue') {
+    document.querySelectorAll('.sb-nav-item')[1].classList.add('active');
+  }
+}
+function switchView(v) {
+  document.getElementById('view-list').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('view-graph').style.display = v === 'graph' ? 'block' : 'none';
+  document.querySelectorAll('.view-btn').forEach((b,i) => b.classList.toggle('active', v === 'list' ? i===0 : i===1));
+}
+function switchTab(el, id) {
+  el.closest('.screen').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.closest('.screen').querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  el.classList.add('active');
+  document.getElementById(id).style.display = 'block';
+}
+function selectRel(el) {
+  document.querySelectorAll('.rel-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function activePill(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>
