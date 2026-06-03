@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeenea Explorer — AI First (v2)</title>
+<style>
+:root {
+  --teal: #00B5AD;
+  --teal-dark: #009990;
+  --teal-light: #e0f7f6;
+  --text: #1a1f2e;
+  --text-2: #6b7280;
+  --border: #e5e7eb;
+  --bg: #f8f9fa;
+  --white: #ffffff;
+  --green: #10b981;
+  --green-bg: #d1fae5;
+  --red: #ef4444;
+  --red-bg: #fee2e2;
+  --sb-bg: #0e1117;
+  --sb-text: #c9d1d9;
+  --sb-muted: #6b7280;
+  --sb-hover: rgba(255,255,255,0.05);
+  --sb-active: rgba(0,181,173,0.13);
+  --sb-border: rgba(255,255,255,0.07);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: var(--text); }
+
+/* ─── SHELL ─── */
+.shell { display: flex; height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 256px; flex-shrink: 0;
+  background: var(--sb-bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sb-head {
+  padding: 15px 14px;
+  border-bottom: 1px solid var(--sb-border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sb-logo { line-height: 1; }
+.sb-brand { font-size: 17px; font-weight: 800; color: var(--teal); letter-spacing: -0.5px; display: block; }
+.sb-sub { font-size: 9px; color: var(--teal); opacity: 0.55; letter-spacing: 2px; }
+.sb-new {
+  display: flex; align-items: center; gap: 5px;
+  background: var(--teal); border: none; border-radius: 7px;
+  color: white; font-size: 12px; font-weight: 600; padding: 6px 11px;
+  cursor: pointer; transition: background 0.12s; white-space: nowrap;
+}
+.sb-new:hover { background: var(--teal-dark); }
+
+.sb-search { padding: 10px 12px; border-bottom: 1px solid var(--sb-border); flex-shrink: 0; }
+.sb-search input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px; padding: 7px 10px; font-size: 12px; color: var(--sb-text); outline: none;
+  transition: border-color 0.12s;
+}
+.sb-search input::placeholder { color: var(--sb-muted); }
+.sb-search input:focus { border-color: var(--teal); }
+
+.sb-body { flex: 1; overflow-y: auto; padding: 6px 0 8px; }
+.sb-body::-webkit-scrollbar { width: 3px; }
+.sb-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+.sb-sec { padding: 14px 14px 4px; }
+.sb-sec-label { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--sb-muted); }
+
+.conv-item {
+  padding: 7px 12px; margin: 1px 6px; border-radius: 6px; cursor: pointer;
+  border-left: 2px solid transparent; transition: background 0.12s;
+}
+.conv-item:hover { background: var(--sb-hover); }
+.conv-item.active { background: var(--sb-active); border-left-color: var(--teal); }
+.conv-name { font-size: 12px; color: var(--sb-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.conv-when { font-size: 10px; color: var(--sb-muted); margin-top: 1px; }
+
+.rep-item {
+  padding: 7px 12px; margin: 1px 6px; border-radius: 6px; cursor: pointer;
+  transition: background 0.12s; display: flex; align-items: center; gap: 9px;
+}
+.rep-item:hover { background: var(--sb-hover); }
+.rep-icon { font-size: 14px; flex-shrink: 0; }
+.rep-name { font-size: 12px; color: var(--sb-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rep-date { font-size: 10px; color: var(--sb-muted); margin-top: 1px; }
+
+.sb-foot {
+  padding: 11px 14px; border-top: 1px solid var(--sb-border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.sb-avatar {
+  width: 28px; height: 28px; background: #f97316; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 700; flex-shrink: 0;
+}
+.sb-uname { font-size: 12px; color: var(--sb-text); }
+.sb-role { font-size: 10px; color: var(--sb-muted); }
+
+/* ─── MAIN ─── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
+
+.topbar {
+  height: 52px; background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.breadcrumb { font-size: 13px; color: var(--text-2); display: flex; align-items: center; gap: 6px; }
+.bc-home { cursor: pointer; }
+.bc-home:hover { color: var(--teal); }
+.bc-sep { opacity: 0.35; }
+.bc-cur { color: var(--text); font-weight: 500; max-width: 400px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.tb-btn {
+  width: 32px; height: 32px; background: none; border: 1px solid var(--border);
+  border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text-2); transition: background 0.12s;
+}
+.tb-btn:hover { background: var(--bg); }
+.tb-avatar {
+  width: 32px; height: 32px; background: #f97316; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: 700;
+}
+
+/* ─── HOME VIEW ─── */
+#homeView { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
+
+.home-hero {
+  background: var(--white); border-bottom: 1px solid var(--border);
+  padding: 44px 40px 36px; flex-shrink: 0;
+}
+.home-greeting { font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+.home-sub { font-size: 15px; color: var(--text-2); margin-bottom: 26px; }
+
+.home-input-wrap {
+  display: flex; align-items: flex-end; gap: 10px;
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 12px 14px; max-width: 720px; transition: border-color 0.15s, box-shadow 0.15s;
+}
+.home-input-wrap:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,181,173,0.1); }
+.home-input-wrap textarea {
+  flex: 1; border: none; outline: none; resize: none; font-size: 14px;
+  font-family: inherit; background: transparent; min-height: 24px; max-height: 120px;
+  line-height: 1.5; color: var(--text);
+}
+.home-input-wrap textarea::placeholder { color: var(--text-2); }
+.home-send {
+  width: 34px; height: 34px; background: var(--teal); border: none; border-radius: 8px;
+  cursor: pointer; flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s;
+}
+.home-send:hover { background: var(--teal-dark); }
+
+.trending { padding: 26px 40px 0; }
+.trending-lbl { font-size: 10px; font-weight: 600; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text-2); margin-bottom: 11px; }
+.trend-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.trend-chip {
+  background: var(--white); border: 1px solid var(--border); border-radius: 100px;
+  padding: 6px 14px; font-size: 13px; cursor: pointer; color: var(--text);
+  display: flex; align-items: center; gap: 7px; transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.trend-chip:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.chip-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+
+.home-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 26px 40px 40px; }
+
+.hg-label { font-size: 13px; font-weight: 600; margin-bottom: 11px; display: flex; align-items: center; gap: 7px; color: var(--text); }
+
+.hcard {
+  background: var(--white); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px; margin-bottom: 8px; cursor: pointer; transition: box-shadow 0.12s, border-color 0.12s;
+}
+.hcard:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.07); border-color: #d1d5db; }
+.hcard-title { font-size: 13px; font-weight: 500; margin-bottom: 3px; }
+.hcard-meta { font-size: 11px; color: var(--text-2); }
+.hcard-preview { font-size: 12px; color: var(--text-2); margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.hcard-row { display: flex; align-items: center; gap: 11px; }
+.hcard-icon { width: 34px; height: 34px; background: var(--teal-light); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 15px; flex-shrink: 0; }
+
+/* ─── CHAT VIEW ─── */
+#chatView { flex: 1; overflow: hidden; display: none; flex-direction: column; }
+#chatView.on { display: flex; }
+
+.chat-bar {
+  padding: 12px 24px; background: var(--white); border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.chat-bar-title { font-size: 14px; font-weight: 600; }
+.save-btn {
+  display: flex; align-items: center; gap: 6px;
+  background: none; border: 1px solid var(--border); border-radius: 7px;
+  padding: 6px 12px; font-size: 12px; cursor: pointer; color: var(--text-2);
+  transition: all 0.15s;
+}
+.save-btn:hover { border-color: var(--teal); color: var(--teal); background: var(--teal-light); }
+.save-btn.saved { border-color: var(--green); color: var(--green); background: var(--green-bg); }
+
+.chat-msgs {
+  flex: 1; overflow-y: auto; padding: 28px 24px 20px;
+  display: flex; flex-direction: column; gap: 22px; align-items: center;
+}
+.chat-msgs::-webkit-scrollbar { width: 4px; }
+.chat-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+.chat-msgs > * { width: 100%; max-width: 800px; }
+
+.msg-u { display: flex; justify-content: flex-end; }
+.bubble-u {
+  background: var(--teal); color: white; padding: 10px 16px;
+  border-radius: 14px 14px 3px 14px; font-size: 14px; max-width: 68%; line-height: 1.5;
+}
+
+.msg-a { display: flex; gap: 12px; align-items: flex-start; }
+.ai-av {
+  width: 28px; height: 28px; background: var(--teal-light); border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--teal); font-weight: 700; font-size: 13px; flex-shrink: 0; margin-top: 2px;
+}
+.ai-body { flex: 1; min-width: 0; }
+
+/* Answer cards */
+.acard {
+  background: var(--white); border: 1px solid var(--border); border-radius: 12px;
+  padding: 18px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.acard-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.acard-type { font-size: 12px; font-weight: 500; color: var(--text-2); }
+.trust-pill {
+  display: flex; align-items: center; gap: 4px;
+  background: var(--green-bg); color: var(--green);
+  font-size: 11px; font-weight: 600; padding: 3px 9px; border-radius: 100px;
+}
+
+/* AI commentary */
+.ai-note {
+  margin-top: 14px; padding: 11px 14px;
+  background: var(--teal-light); border-left: 3px solid var(--teal); border-radius: 0 8px 8px 0;
+  font-size: 12px; color: #0a7570; line-height: 1.65;
+  display: flex; gap: 8px; align-items: flex-start;
+}
+.ai-note-icon { flex-shrink: 0; color: var(--teal); margin-top: 1px; }
+
+/* Definition */
+.def-term { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+.def-body { font-size: 14px; color: var(--text-2); line-height: 1.7; margin-bottom: 12px; }
+.def-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.def-tag { background: var(--bg); border: 1px solid var(--border); border-radius: 5px; padding: 3px 9px; font-size: 12px; color: var(--text-2); }
+
+/* KPI */
+.kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 12px; }
+.kpi-box { background: var(--bg); border-radius: 10px; padding: 16px; text-align: center; border: 1px solid var(--border); }
+.kpi-lbl { font-size: 12px; color: var(--text-2); margin-bottom: 5px; }
+.kpi-val { font-size: 34px; font-weight: 800; line-height: 1; }
+.kpi-unit { font-size: 16px; font-weight: 400; color: var(--text-2); }
+.kpi-delta { display: inline-flex; align-items: center; gap: 3px; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 5px; margin-top: 7px; }
+.up { background: var(--green-bg); color: var(--green); }
+.dn { background: var(--red-bg); color: var(--red); }
+.flat { background: var(--bg); color: var(--text-2); border: 1px solid var(--border); }
+
+/* Chart */
+.chart-wrap { position: relative; height: 200px; margin: 8px 0; }
+.chart-mini { display: flex; gap: 10px; margin-top: 10px; }
+.cm-box { flex: 1; background: var(--bg); border-radius: 8px; padding: 10px; text-align: center; border: 1px solid var(--border); }
+.cm-lbl { font-size: 11px; color: var(--text-2); margin-bottom: 3px; }
+.cm-val { font-size: 20px; font-weight: 700; }
+
+/* Dataset list */
+.ds-list { display: flex; flex-direction: column; gap: 10px; }
+.ds-card {
+  background: var(--bg); border-radius: 10px; border: 1px solid var(--border);
+  padding: 13px 15px; cursor: pointer; transition: border-color 0.12s;
+}
+.ds-card:hover { border-color: var(--teal); }
+.ds-card-head { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 4px; }
+.ds-name { font-size: 13px; font-weight: 600; }
+.ds-meta { font-size: 11px; color: var(--text-2); }
+.q-pill { font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 100px; white-space: nowrap; margin-left: 8px; }
+.q-hi { background: var(--green-bg); color: var(--green); }
+.q-mid { background: #fef3c7; color: #92400e; }
+
+/* Source */
+.src { font-size: 11px; color: var(--text-2); display: flex; align-items: center; gap: 5px; margin-top: 8px; }
+.src a { color: var(--teal); cursor: pointer; }
+.src a:hover { text-decoration: underline; }
+
+/* Chips */
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.chip {
+  background: var(--white); border: 1px solid var(--border); border-radius: 100px;
+  padding: 5px 13px; font-size: 12px; cursor: pointer; color: var(--text-2);
+  transition: border-color 0.12s, color 0.12s;
+}
+.chip:hover { border-color: var(--teal); color: var(--teal); }
+
+/* Loading */
+.dots span { display: inline-block; width: 6px; height: 6px; background: var(--teal); border-radius: 50%; margin: 0 2px; animation: bob 1.1s infinite; }
+.dots span:nth-child(2) { animation-delay: 0.18s; }
+.dots span:nth-child(3) { animation-delay: 0.36s; }
+@keyframes bob { 0%,80%,100% { transform: translateY(0); opacity: 0.6; } 40% { transform: translateY(-5px); opacity: 1; } }
+
+/* Chat input */
+.chat-input-bar { background: var(--white); border-top: 1px solid var(--border); padding: 14px 24px; flex-shrink: 0; }
+.chat-input-inner { max-width: 800px; margin: 0 auto; }
+.chat-input-box { border: 1.5px solid var(--border); border-radius: 12px; overflow: hidden; transition: border-color 0.15s; }
+.chat-input-box:focus-within { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(0,181,173,0.08); }
+.chat-input-box textarea { width: 100%; border: none; outline: none; padding: 12px 16px; font-size: 14px; font-family: inherit; resize: none; min-height: 44px; max-height: 120px; line-height: 1.5; background: var(--white); }
+.chat-foot { display: flex; align-items: center; justify-content: space-between; padding: 6px 12px 8px; background: var(--bg); }
+.ctx-lbl { font-size: 11px; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+.ctx-name { color: var(--teal); font-weight: 500; }
+.chat-send { width: 30px; height: 30px; background: var(--teal); border: none; border-radius: 7px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.12s; }
+.chat-send:hover { background: var(--teal-dark); }
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="sb-head">
+    <div class="sb-logo">
+      <span class="sb-brand">zeenea</span>
+      <span class="sb-sub">explorer</span>
+    </div>
+    <button class="sb-new" onclick="goHome()">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.8"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      New
+    </button>
+  </div>
+
+  <div class="sb-search">
+    <input type="text" placeholder="Search conversations…">
+  </div>
+
+  <div class="sb-body">
+    <div class="sb-sec"><div class="sb-sec-label">Recent</div></div>
+
+    <div class="conv-item" id="conv-cupra" onclick="loadConv('cupra')">
+      <div class="conv-name">Cupra Born NL performance</div>
+      <div class="conv-when">Q1 2025 · 3h ago</div>
+    </div>
+    <div class="conv-item" id="conv-subs" onclick="loadConv('subs')">
+      <div class="conv-name">Active subscriptions YoY</div>
+      <div class="conv-when">Metrics · Yesterday</div>
+    </div>
+    <div class="conv-item" id="conv-store" onclick="loadConv('store')">
+      <div class="conv-name">Store performance datasets</div>
+      <div class="conv-when">Discovery · 2d ago</div>
+    </div>
+    <div class="conv-item" id="conv-def" onclick="loadConv('def')">
+      <div class="conv-name">view_users_weekly_renewal</div>
+      <div class="conv-when">Definition · 3d ago</div>
+    </div>
+    <div class="conv-item" id="conv-subbrand" onclick="loadConv('subbrand')">
+      <div class="conv-name">Sub-brand performance by country</div>
+      <div class="conv-when">Sales · 4d ago</div>
+    </div>
+    <div class="conv-item" id="conv-active" onclick="loadConv('active')">
+      <div class="conv-name">What is the active_users metric?</div>
+      <div class="conv-when">Definition · 5d ago</div>
+    </div>
+
+    <div class="sb-sec" style="margin-top:6px;"><div class="sb-sec-label">Saved Reports</div></div>
+
+    <div class="rep-item" onclick="loadConv('cupra')">
+      <div class="rep-icon">📊</div>
+      <div>
+        <div class="rep-name">EU Sales Q1 Report</div>
+        <div class="rep-date">Saved Apr 12</div>
+      </div>
+    </div>
+    <div class="rep-item" onclick="loadConv('subs')">
+      <div class="rep-icon">📈</div>
+      <div>
+        <div class="rep-name">Weekly Subscription Metrics</div>
+        <div class="rep-date">Saved Apr 8</div>
+      </div>
+    </div>
+    <div class="rep-item" onclick="loadConv('store')">
+      <div class="rep-icon">🏪</div>
+      <div>
+        <div class="rep-name">Store Performance Overview</div>
+        <div class="rep-date">Saved Mar 29</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-foot">
+    <div class="sb-avatar">OV</div>
+    <div>
+      <div class="sb-uname">Ondra Vesely</div>
+      <div class="sb-role">Business Analyst</div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="breadcrumb">
+      <span class="bc-home" onclick="goHome()">Explorer</span>
+      <span class="bc-sep">/</span>
+      <span class="bc-cur" id="bcCur">Home</span>
+    </div>
+    <div class="topbar-right">
+      <button class="tb-btn" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </button>
+      <div class="tb-avatar">OV</div>
+    </div>
+  </div>
+
+  <!-- ─── HOME VIEW ─── -->
+  <div id="homeView">
+
+    <div class="home-hero">
+      <div class="home-greeting">Good morning, Ondra</div>
+      <div class="home-sub">What would you like to know about your data today?</div>
+      <div class="home-input-wrap">
+        <textarea id="homeInput" placeholder="Ask about metrics, trends, datasets, or definitions…" rows="1" onkeydown="homeKey(event)"></textarea>
+        <button class="home-send" onclick="homeAsk()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="trending">
+      <div class="trending-lbl">Most asked this week</div>
+      <div class="trend-chips">
+        <div class="trend-chip" onclick="startChat('Show Cupra Born sales in Netherlands by month Q1 2025')">
+          <div class="chip-dot" style="background:#3b82f6;"></div> Cupra Born NL — Q1 2025
+        </div>
+        <div class="trend-chip" onclick="startChat('How many active subscriptions now vs last year?')">
+          <div class="chip-dot" style="background:#10b981;"></div> Active subscriptions YoY
+        </div>
+        <div class="trend-chip" onclick="startChat('What does view_users_weekly_renewal mean?')">
+          <div class="chip-dot" style="background:#8b5cf6;"></div> Define view_users_weekly_renewal
+        </div>
+        <div class="trend-chip" onclick="startChat('Find datasets about store performance')">
+          <div class="chip-dot" style="background:#f59e0b;"></div> Store performance data
+        </div>
+        <div class="trend-chip" onclick="startChat('What does the active_users metric mean?')">
+          <div class="chip-dot" style="background:#8b5cf6;"></div> Define active_users
+        </div>
+        <div class="trend-chip" onclick="startChat('Who owns the sales_transactions_eu dataset?')">
+          <div class="chip-dot" style="background:#6b7280;"></div> Dataset ownership
+        </div>
+      </div>
+    </div>
+
+    <div class="home-grid">
+      <div>
+        <div class="hg-label">🕐 Recent conversations</div>
+        <div class="hcard" onclick="loadConv('cupra')">
+          <div class="hcard-title">Cupra Born NL performance</div>
+          <div class="hcard-meta">3 hours ago · 4 messages</div>
+          <div class="hcard-preview">Jan 312, Feb 428, Mar 391 units — Feb spike tied to EV incentive programme</div>
+        </div>
+        <div class="hcard" onclick="loadConv('subs')">
+          <div class="hcard-title">Active subscriptions YoY</div>
+          <div class="hcard-meta">Yesterday · 3 messages</div>
+          <div class="hcard-preview">142K now vs 119K last year — +18.4%, above the +15% company target</div>
+        </div>
+        <div class="hcard" onclick="loadConv('store')">
+          <div class="hcard-title">Store performance datasets</div>
+          <div class="hcard-meta">2 days ago · 2 messages</div>
+          <div class="hcard-preview">7 datasets found, top match: store_performance_daily (96% quality)</div>
+        </div>
+      </div>
+
+      <div>
+        <div class="hg-label">📌 Saved reports</div>
+        <div class="hcard" onclick="loadConv('cupra')">
+          <div class="hcard-row">
+            <div class="hcard-icon">📊</div>
+            <div>
+              <div class="hcard-title">EU Sales Q1 Report</div>
+              <div class="hcard-meta">Saved Apr 12 · sales.vehicle_sales_eu</div>
+            </div>
+          </div>
+        </div>
+        <div class="hcard" onclick="loadConv('subs')">
+          <div class="hcard-row">
+            <div class="hcard-icon">📈</div>
+            <div>
+              <div class="hcard-title">Weekly Subscription Metrics</div>
+              <div class="hcard-meta">Saved Apr 8 · subscriptions.active_subscriptions_daily</div>
+            </div>
+          </div>
+        </div>
+        <div class="hcard" onclick="loadConv('store')">
+          <div class="hcard-row">
+            <div class="hcard-icon">🏪</div>
+            <div>
+              <div class="hcard-title">Store Performance Overview</div>
+              <div class="hcard-meta">Saved Mar 29 · retail_db.store_performance_daily</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ─── CHAT VIEW ─── -->
+  <div id="chatView">
+
+    <div class="chat-bar">
+      <div class="chat-bar-title" id="chatTitle">Conversation</div>
+      <button class="save-btn" id="saveBtn" onclick="toggleSave()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save as report
+      </button>
+    </div>
+
+    <div class="chat-msgs" id="chatMsgs"></div>
+
+    <div class="chat-input-bar">
+      <div class="chat-input-inner">
+        <div class="chat-input-box">
+          <textarea id="chatInput" placeholder="Ask a follow-up…" rows="1" onkeydown="chatKey(event)"></textarea>
+          <div class="chat-foot">
+            <div class="ctx-lbl">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+              Searching: <span class="ctx-name">All trusted data</span>
+            </div>
+            <button class="chat-send" onclick="chatAsk()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4 20-7z"/></svg>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+
+/* ── NAV ── */
+function goHome() {
+  document.getElementById('homeView').style.display = '';
+  document.getElementById('chatView').classList.remove('on');
+  document.getElementById('bcCur').textContent = 'Home';
+  document.querySelectorAll('.conv-item').forEach(e => e.classList.remove('active'));
+}
+
+function showChat(title) {
+  document.getElementById('homeView').style.display = 'none';
+  document.getElementById('chatView').classList.add('on');
+  document.getElementById('chatTitle').textContent = title;
+  document.getElementById('bcCur').textContent = title;
+  resetSaveBtn();
+}
+
+function resetSaveBtn() {
+  const b = document.getElementById('saveBtn');
+  b.classList.remove('saved');
+  b.innerHTML = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save as report`;
+}
+
+function toggleSave() {
+  const b = document.getElementById('saveBtn');
+  b.classList.toggle('saved');
+  b.innerHTML = b.classList.contains('saved')
+    ? `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Saved to reports`
+    : `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg> Save as report`;
+}
+
+/* ── INPUTS ── */
+function homeKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); homeAsk(); } }
+function homeAsk() {
+  const v = document.getElementById('homeInput').value.trim();
+  if (!v) return;
+  document.getElementById('homeInput').value = '';
+  startChat(v);
+}
+function chatKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); chatAsk(); } }
+function chatAsk() {
+  const v = document.getElementById('chatInput').value.trim();
+  if (!v) return;
+  document.getElementById('chatInput').value = '';
+  sendMessage(v);
+}
+
+/* ── CONVERSATIONS ── */
+const convQuestions = {
+  cupra:    'Show Cupra Born sales in Netherlands by month Q1 2025',
+  subs:     'How many active subscriptions now vs last year?',
+  store:    'Find datasets about store performance',
+  def:      'What does view_users_weekly_renewal mean?',
+  subbrand: 'Show me sub-brand performance by country',
+  active:   'What does the active_users metric mean?',
+};
+const convTitles = {
+  cupra:    'Cupra Born NL performance',
+  subs:     'Active subscriptions YoY',
+  store:    'Store performance datasets',
+  def:      'view_users_weekly_renewal',
+  subbrand: 'Sub-brand performance by country',
+  active:   'What is active_users?',
+};
+
+function startChat(question) {
+  document.getElementById('chatMsgs').innerHTML = '';
+  document.querySelectorAll('.conv-item').forEach(e => e.classList.remove('active'));
+  showChat(question.length > 44 ? question.slice(0, 44) + '…' : question);
+  sendMessage(question);
+}
+
+function loadConv(id) {
+  document.querySelectorAll('.conv-item').forEach(e => e.classList.remove('active'));
+  const el = document.getElementById('conv-' + id);
+  if (el) el.classList.add('active');
+  document.getElementById('chatMsgs').innerHTML = '';
+  showChat(convTitles[id] || 'Conversation');
+  sendMessage(convQuestions[id]);
+}
+
+/* ── MESSAGING ── */
+function sendMessage(text) {
+  const msgs = document.getElementById('chatMsgs');
+  const um = document.createElement('div');
+  um.className = 'msg-u';
+  um.innerHTML = `<div class="bubble-u">${text}</div>`;
+  msgs.appendChild(um);
+
+  const lm = document.createElement('div');
+  lm.className = 'msg-a';
+  lm.innerHTML = `<div class="ai-av">✦</div><div class="ai-body"><div class="dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(lm);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    msgs.removeChild(lm);
+    msgs.appendChild(respond(text));
+    msgs.scrollTop = msgs.scrollHeight;
+    requestAnimationFrame(() => {
+      if (document.getElementById('barChart')) initBar();
+      if (document.getElementById('lineChart')) initLine();
+    });
+  }, 1100);
+}
+
+function respond(text) {
+  const t = text.toLowerCase();
+  if (t.includes('view_users') || (t.includes('what does') && t.includes('renewal'))) return defCard('renewal');
+  if (t.includes('active_users') || (t.includes('what does') && t.includes('active_users'))) return defCard('active');
+  if (t.includes('subscription') || t.includes('last year')) return kpiCard();
+  if (t.includes('cupra') || (t.includes('sales') && t.includes('netherlands'))) return chartCard();
+  if (t.includes('dataset') || t.includes('store performance') || t.includes('find')) return dsCard();
+  if (t.includes('sub-brand') || t.includes('country')) return chartCard();
+  return fallback();
+}
+
+/* ── CARDS ── */
+function defCard(type) {
+  const isActive = type === 'active';
+  const term = isActive ? 'active_users' : 'view_users_weekly_renewal';
+  const desc = isActive
+    ? 'Count of distinct users who performed at least one qualifying action (login, content view, or transaction) within a rolling 30-day window. Deduplication is applied across devices using the canonical user_id.'
+    : 'A dataset view capturing user renewal events on a rolling 7-day window. Each row represents one renewal event including subscription tier, renewal date, and user identifier. Used to track weekly recurring revenue at the user level.';
+  const commentary = isActive
+    ? 'This metric appears in 23 reports across your organisation — it is the single most-referenced KPI in the Product and Marketing domains. Definition was last updated by the Data Platform team in January 2026 after a methodology change to device deduplication.'
+    : 'One of the most-referenced datasets in your subscription domain — it underpins 6 active use cases and appears in 3 saved reports. Steward-verified, the canonical source for renewal tracking.';
+  const source = isActive ? 'Glossary · metrics.active_users' : 'Glossary · subscriptions_db.view_users_weekly_renewal';
+
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📖 Definition</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="def-term">${term}</div>
+      <div class="def-body">${desc}</div>
+      <div class="def-tags">
+        <span class="def-tag">🗄 ${isActive ? 'metrics' : 'subscriptions_db'}</span>
+        <span class="def-tag">👤 Data Platform team</span>
+        <span class="def-tag">🕐 Updated ${isActive ? 'Jan 2026' : 'daily'}</span>
+        <span class="def-tag">⭐ Quality ${isActive ? '98%' : '94%'}</span>
+      </div>
+      <div class="ai-note">
+        <span class="ai-note-icon">✦</span>
+        ${commentary}
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      ${source}
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="sendMessage('Show trend for ${term}')">Show trend</div>
+      <div class="chip" onclick="sendMessage('What datasets use ${term}?')">Related datasets</div>
+      <div class="chip" onclick="sendMessage('Who owns this?')">Who owns it?</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+function kpiCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📊 Metric comparison — Active subscriptions</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-lbl">Now — Apr 2026</div>
+          <div class="kpi-val">142<span class="kpi-unit">K</span></div>
+          <div><span class="kpi-delta up">↑ +18.4%</span></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-lbl">Apr 2025 (baseline)</div>
+          <div class="kpi-val">119<span class="kpi-unit">K</span></div>
+          <div><span class="kpi-delta flat">YoY baseline</span></div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:150px;">
+        <canvas id="lineChart"></canvas>
+      </div>
+      <div class="ai-note">
+        <span class="ai-note-icon">✦</span>
+        Growth has been steady since August 2025 with no significant churn spikes. The +18.4% YoY exceeds the company target of +15%. Sourced from <strong>active_subscriptions_daily</strong> — steward-verified, updated every 6 hours.
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <a>subscriptions.active_subscriptions_daily</a> · as of today
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="sendMessage('Break down by plan type')">By plan type</div>
+      <div class="chip" onclick="sendMessage('Show monthly churn rate')">Churn rate</div>
+      <div class="chip" onclick="sendMessage('What drove growth in Q4?')">Q4 drivers</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+function chartCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📈 Trend — Cupra Born · Netherlands · Q1 2025</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart-mini">
+        <div class="cm-box"><div class="cm-lbl">January</div><div class="cm-val">312</div><div><span class="kpi-delta dn" style="font-size:11px;padding:1px 6px;">↓ −4%</span></div></div>
+        <div class="cm-box"><div class="cm-lbl">February</div><div class="cm-val">428</div><div><span class="kpi-delta up" style="font-size:11px;padding:1px 6px;">↑ +37%</span></div></div>
+        <div class="cm-box"><div class="cm-lbl">March</div><div class="cm-val">391</div><div><span class="kpi-delta dn" style="font-size:11px;padding:1px 6px;">↓ −9%</span></div></div>
+      </div>
+      <div class="ai-note">
+        <span class="ai-note-icon">✦</span>
+        February's +37% spike aligns with the Netherlands EV incentive programme that ran Feb 3–28. This pattern is consistent across other EV models in the same market. Data from <strong>sales.vehicle_sales_eu</strong> — quality 96%, updated daily.
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <a>sales.vehicle_sales_eu</a> · model=Cupra Born, country=NL
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="sendMessage('Compare to Germany in Q1 2025')">vs Germany</div>
+      <div class="chip" onclick="sendMessage('Show full year 2025 for Cupra Born')">Full year 2025</div>
+      <div class="chip" onclick="sendMessage('How did other EV models perform?')">Other EV models</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+function dsCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">🗂 Datasets found — 3 of 7 matches (trusted only)</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="ds-list">
+
+        <div class="ds-card">
+          <div class="ds-card-head">
+            <div>
+              <div class="ds-name">store_performance_daily</div>
+              <div class="ds-meta">retail_db · Updated daily · 2.1M rows</div>
+            </div>
+            <span class="q-pill q-hi">96% quality</span>
+          </div>
+          <div class="ai-note" style="margin-top:10px;">
+            <span class="ai-note-icon">✦</span>
+            Most-queried store dataset — 847 queries this month. Underpins 14 active use cases across Retail and Finance. Steward-verified, last audited 2 weeks ago.
+          </div>
+        </div>
+
+        <div class="ds-card">
+          <div class="ds-card-head">
+            <div>
+              <div class="ds-name">store_kpis_weekly_summary</div>
+              <div class="ds-meta">analytics_dw · Updated weekly · Aggregated</div>
+            </div>
+            <span class="q-pill q-hi">91% quality</span>
+          </div>
+          <div class="ai-note" style="margin-top:10px;">
+            <span class="ai-note-icon">✦</span>
+            Pre-aggregated KPIs for weekly reporting. Best choice for revenue, footfall, and conversion rate without writing joins. Primarily used by the Retail Analytics team.
+          </div>
+        </div>
+
+        <div class="ds-card">
+          <div class="ds-card-head">
+            <div>
+              <div class="ds-name">pos_transactions_by_store</div>
+              <div class="ds-meta">sales_db · Real-time · 45M rows</div>
+            </div>
+            <span class="q-pill q-mid">74% quality</span>
+          </div>
+          <div class="ai-note" style="margin-top:10px;">
+            <span class="ai-note-icon">✦</span>
+            Raw transaction data — very granular but quality is amber due to 3 unresolved field-level issues flagged by the steward. Fine for exploration, use with caution for reporting.
+          </div>
+        </div>
+
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      3 of 7 matching · <a>View all in catalogue</a>
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="sendMessage('Query store_performance_daily for last 30 days')">Query top result</div>
+      <div class="chip" onclick="sendMessage('What KPIs are in store_kpis_weekly_summary?')">What KPIs?</div>
+      <div class="chip" onclick="sendMessage('Why is pos_transactions amber quality?')">Why amber?</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+function fallback() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div style="font-size:14px;color:#6b7280;line-height:1.65;">
+        I couldn't find a matching dataset or metric for that in the trusted catalogue. Try rephrasing, or browse datasets directly.
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="sendMessage('Find datasets about store performance')">Browse datasets</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── CHARTS ── */
+function initBar() {
+  const c = document.getElementById('barChart');
+  if (!c || c._init) return; c._init = true;
+  new Chart(c, {
+    type: 'bar',
+    data: {
+      labels: ['January', 'February', 'March'],
+      datasets: [{ data: [312, 428, 391], backgroundColor: ['rgba(0,181,173,0.6)','rgba(0,181,173,1)','rgba(0,181,173,0.72)'], borderRadius: 7, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.y} units` } } },
+      scales: { x: { grid: { display: false }, ticks: { font: { size: 12 } } }, y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 11 } } } }
+    }
+  });
+}
+
+function initLine() {
+  const c = document.getElementById('lineChart');
+  if (!c || c._init) return; c._init = true;
+  new Chart(c, {
+    type: 'line',
+    data: {
+      labels: ['Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar','Apr'],
+      datasets: [
+        { label: '2026', data: [110,112,118,122,128,130,133,137,140,142], borderColor: '#00B5AD', backgroundColor: 'rgba(0,181,173,0.08)', fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2 },
+        { label: '2025', data: [95,97,100,103,107,109,111,113,116,119], borderColor: '#d1d5db', fill: false, tension: 0.4, pointRadius: 0, borderWidth: 1.5, borderDash: [4,3] }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } }, tooltip: { callbacks: { label: c => ` ${c.parsed.y}K` } } },
+      scales: { x: { grid: { display: false }, ticks: { font: { size: 10 } } }, y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 }, callback: v => v+'K' } } }
+    }
+  });
+}
+</script>
+</body>
+</html>

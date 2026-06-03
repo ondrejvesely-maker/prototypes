@@ -1,0 +1,1018 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zeenea Explorer — Data Assistant Prototype</title>
+  <style>
+    :root {
+      --teal: #00B5AD;
+      --teal-dark: #009990;
+      --teal-light: #e0f7f6;
+      --teal-mid: #b2edeb;
+      --text: #1a1f2e;
+      --text-2: #6b7280;
+      --border: #e5e7eb;
+      --bg: #f9fafb;
+      --white: #ffffff;
+      --green: #10b981;
+      --green-bg: #d1fae5;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --red-bg: #fee2e2;
+      --shadow: 0 2px 12px rgba(0,0,0,0.06);
+      --shadow-lg: 0 8px 40px rgba(0,0,0,0.13);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ─── NAV ─── */
+    .nav {
+      background: var(--white);
+      border-bottom: 1px solid var(--border);
+      height: 56px;
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .logo { display: flex; flex-direction: column; line-height: 1; gap: 1px; }
+    .logo-brand { font-size: 19px; font-weight: 800; color: var(--teal); letter-spacing: -0.5px; }
+    .logo-sub { font-size: 9px; color: var(--teal); letter-spacing: 2px; opacity: 0.65; text-transform: lowercase; }
+    .nav-right { display: flex; align-items: center; gap: 20px; }
+    .nav-label { font-size: 13px; color: var(--text-2); cursor: pointer; display: flex; align-items: center; gap: 5px; }
+    .nav-dot { width: 7px; height: 7px; background: var(--teal); border-radius: 50%; }
+    .nav-avatar {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #f97316; color: white; font-size: 12px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center; cursor: pointer;
+    }
+    .nav-ai-btn {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--teal); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 2px 10px rgba(0,181,173,0.35);
+      transition: transform 0.15s, box-shadow 0.15s;
+      position: relative;
+    }
+    .nav-ai-btn:hover { transform: scale(1.08); box-shadow: 0 3px 16px rgba(0,181,173,0.5); }
+    .nav-ai-btn .ai-badge {
+      position: absolute; top: -1px; right: -1px;
+      width: 9px; height: 9px; background: #f97316;
+      border-radius: 50%; border: 1.5px solid white;
+    }
+
+    /* ─── HERO ─── */
+    .hero {
+      background: var(--white);
+      padding: 44px 32px 40px;
+      position: relative;
+    }
+    .hero-waves {
+      position: absolute; inset: 0; pointer-events: none; opacity: 0.28;
+      overflow: hidden;
+    }
+    .hero-inner {
+      position: relative; z-index: 1;
+      max-width: 1160px; margin: 0 auto;
+      display: flex; align-items: center; gap: 40px;
+    }
+    .hero-title { font-size: 21px; font-weight: 700; white-space: nowrap; }
+    .search-wrap {
+      flex: 1;
+      display: flex; align-items: center; gap: 10px;
+      border: 1.5px solid var(--teal); border-radius: 100px;
+      padding: 9px 20px; background: var(--white);
+    }
+    .search-wrap input {
+      border: none; outline: none; font-size: 14px;
+      color: var(--text-2); width: 100%; background: transparent;
+    }
+    .search-wrap.focused {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(0,181,173,0.12);
+    }
+
+    /* ─── SEARCH DROPDOWN ─── */
+    .search-container { flex: 1; position: relative; }
+    .search-dropdown {
+      position: absolute; top: calc(100% + 8px); left: 0; right: 0;
+      background: var(--white); border: 1px solid var(--border);
+      border-radius: 12px; box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+      overflow: hidden; z-index: 200;
+      opacity: 0; transform: translateY(-6px); pointer-events: none;
+      transition: opacity 0.18s ease, transform 0.18s ease;
+    }
+    .search-dropdown.visible {
+      opacity: 1; transform: translateY(0); pointer-events: all;
+    }
+    .sd-simple {
+      padding: 12px 16px;
+      font-size: 12px; color: var(--text-2);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .sd-simple svg { flex-shrink: 0; opacity: 0.5; }
+    .sd-ai {
+      padding: 14px 16px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; transition: background 0.12s;
+    }
+    .sd-ai:hover { background: var(--teal-light); }
+    .sd-ai-left { display: flex; align-items: center; gap: 12px; }
+    .sd-ai-icon {
+      width: 34px; height: 34px; background: var(--teal-light); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    .sd-ai-text strong { font-size: 13px; font-weight: 600; display: block; margin-bottom: 2px; }
+    .sd-ai-text span { font-size: 12px; color: var(--text-2); }
+    .sd-ai-arrow {
+      width: 28px; height: 28px; background: var(--teal); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+
+    /* ─── MAIN ─── */
+    .main { max-width: 1160px; margin: 0 auto; padding: 32px; }
+
+    .sec-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;
+    }
+    .sec-title {
+      font-size: 15px; font-weight: 600;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .badge {
+      width: 22px; height: 22px; border-radius: 50%; background: var(--bg);
+      font-size: 11px; color: var(--text-2); display: flex; align-items: center; justify-content: center;
+    }
+    .sec-desc { font-size: 13px; color: var(--text-2); margin-bottom: 16px; }
+    .link { font-size: 13px; color: var(--teal); cursor: pointer; }
+
+    .topic-card {
+      width: 195px; border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; background: var(--white); cursor: pointer; display: inline-block;
+      transition: box-shadow 0.15s;
+    }
+    .topic-card:hover { box-shadow: var(--shadow); }
+    .topic-icon {
+      width: 34px; height: 34px; background: #f97316; border-radius: 6px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 13px; font-weight: 700; margin-bottom: 10px;
+    }
+    .topic-name { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+    .topic-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+    .divider { border: none; border-top: 1px solid var(--border); margin: 28px 0; }
+
+    .type-grid { display: flex; gap: 14px; flex-wrap: wrap; }
+    .type-card {
+      border: 1px solid var(--border); border-radius: 8px; padding: 14px;
+      background: var(--white); flex: 1; min-width: 150px; cursor: pointer;
+      transition: box-shadow 0.15s;
+    }
+    .type-card:hover { box-shadow: var(--shadow); }
+    .type-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 9px; border-radius: 4px; font-size: 12px;
+      font-weight: 500; margin-bottom: 7px;
+    }
+    .pill-dataset { background: #dbeafe; color: #1d4ed8; }
+    .pill-process { background: #fce7f3; color: #be185d; }
+    .pill-usecase { background: #fef3c7; color: #92400e; }
+    .pill-category { background: #dcfce7; color: #166534; }
+    .pill-security { background: #f0fdf4; color: #15803d; }
+    .type-desc { font-size: 12px; color: var(--text-2); line-height: 1.5; }
+
+
+    /* ─── OVERLAY ─── */
+    .overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.18);
+      z-index: 250; opacity: 0; pointer-events: none; transition: opacity 0.3s;
+    }
+    .overlay.on { opacity: 1; pointer-events: all; }
+
+    /* ─── PANEL ─── */
+    .panel {
+      position: fixed; top: 0; right: 0; bottom: 0; width: 448px;
+      background: var(--white);
+      box-shadow: var(--shadow-lg);
+      z-index: 300;
+      display: flex; flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .panel.open { transform: translateX(0); }
+    .panel.expanded {
+      top: 50%; left: 50%; right: auto; bottom: auto;
+      width: min(860px, 90vw);
+      height: min(700px, 88vh);
+      transform: translate(-50%, -50%);
+      border-radius: 14px;
+      box-shadow: 0 16px 60px rgba(0,0,0,0.18);
+    }
+
+    /* Panel header */
+    .p-head {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .p-title { display: flex; align-items: center; gap: 10px; }
+    .p-icon {
+      width: 30px; height: 30px; background: var(--teal-light); border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .p-name { font-size: 14px; font-weight: 600; }
+    .p-new {
+      font-size: 11px; color: var(--text-2); background: none; border: none;
+      cursor: pointer; padding: 2px 6px; border-radius: 4px; margin-left: 4px;
+    }
+    .p-new:hover { background: var(--bg); }
+    .p-btns { display: flex; gap: 4px; }
+    .p-btn {
+      width: 30px; height: 30px; background: none; border: none;
+      border-radius: 6px; cursor: pointer; color: var(--text-2);
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.12s;
+    }
+    .p-btn:hover { background: var(--bg); }
+
+    /* Messages area */
+    .p-msgs {
+      flex: 1; overflow-y: auto; padding: 18px;
+      display: flex; flex-direction: column; gap: 14px;
+    }
+
+    /* Welcome */
+    .welcome { text-align: center; padding: 20px 12px 4px; }
+    .welcome-icon {
+      width: 44px; height: 44px; background: var(--teal-light); border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 12px; font-size: 20px;
+    }
+    .welcome h3 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+    .welcome p { font-size: 13px; color: var(--text-2); line-height: 1.55; }
+
+    .sugg-list { display: flex; flex-direction: column; gap: 7px; margin-top: 16px; text-align: left; }
+    .sugg {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 9px 13px; font-size: 13px; cursor: pointer; color: var(--text);
+      transition: border-color 0.12s, background 0.12s; line-height: 1.4;
+    }
+    .sugg:hover { border-color: var(--teal); background: var(--teal-light); }
+
+    /* User bubble */
+    .msg-u { display: flex; justify-content: flex-end; }
+    .bubble-u {
+      background: var(--teal); color: white;
+      padding: 9px 14px; border-radius: 12px 12px 3px 12px;
+      font-size: 13px; max-width: 82%; line-height: 1.5;
+    }
+
+    /* AI message */
+    .msg-a { display: flex; gap: 9px; align-items: flex-start; }
+    .ai-av {
+      width: 26px; height: 26px; background: var(--teal-light); border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; font-size: 13px; color: var(--teal); font-weight: 700;
+    }
+    .ai-body { flex: 1; min-width: 0; }
+
+    /* Answer card */
+    .acard {
+      background: var(--bg); border: 1px solid var(--border); border-radius: 10px;
+      padding: 13px; margin-bottom: 6px;
+    }
+    .acard-head {
+      display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;
+    }
+    .acard-type { font-size: 11px; font-weight: 500; color: var(--text-2); letter-spacing: 0.3px; }
+    .trust-pill {
+      display: flex; align-items: center; gap: 4px;
+      background: var(--green-bg); color: var(--green);
+      font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 100px;
+    }
+
+    /* ─── DEFINITION card ─── */
+    .def-term { font-size: 15px; font-weight: 700; margin-bottom: 6px; color: var(--text); }
+    .def-body { font-size: 13px; color: var(--text-2); line-height: 1.65; margin-bottom: 10px; }
+    .def-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+    .def-tag {
+      background: var(--white); border: 1px solid var(--border); border-radius: 4px;
+      padding: 3px 8px; font-size: 11px; color: var(--text-2);
+      display: flex; align-items: center; gap: 4px;
+    }
+
+    /* ─── KPI card ─── */
+    .kpi-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px; }
+    .kpi-box {
+      background: var(--white); border-radius: 8px; padding: 11px 10px;
+      text-align: center; border: 1px solid var(--border);
+    }
+    .kpi-lbl { font-size: 11px; color: var(--text-2); margin-bottom: 4px; }
+    .kpi-val { font-size: 28px; font-weight: 800; color: var(--text); line-height: 1; }
+    .kpi-unit { font-size: 14px; font-weight: 400; color: var(--text-2); }
+    .kpi-delta {
+      display: inline-flex; align-items: center; gap: 3px;
+      font-size: 12px; font-weight: 600; padding: 2px 7px; border-radius: 4px; margin-top: 5px;
+    }
+    .up { background: var(--green-bg); color: var(--green); }
+    .dn { background: var(--red-bg); color: var(--red); }
+    .flat { background: var(--bg); color: var(--text-2); }
+
+    /* ─── CHART card ─── */
+    .chart-wrap { position: relative; height: 150px; margin: 6px 0; }
+    .chart-mini { display: flex; gap: 8px; margin-top: 8px; }
+    .chart-mini-box {
+      flex: 1; background: var(--white); border-radius: 7px; padding: 7px 8px;
+      text-align: center; border: 1px solid var(--border);
+    }
+    .mini-lbl { font-size: 10px; color: var(--text-2); margin-bottom: 3px; }
+    .mini-val { font-size: 17px; font-weight: 700; }
+
+    /* ─── DATASET LIST card ─── */
+    .ds-list { display: flex; flex-direction: column; gap: 6px; }
+    .ds-row {
+      background: var(--white); border-radius: 7px; padding: 9px 11px;
+      display: flex; align-items: center; justify-content: space-between;
+      cursor: pointer; border: 1px solid transparent; transition: border-color 0.12s;
+    }
+    .ds-row:hover { border-color: var(--teal); }
+    .ds-name { font-size: 13px; font-weight: 500; }
+    .ds-meta { font-size: 11px; color: var(--text-2); margin-top: 2px; }
+    .q-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+    /* Source line */
+    .src {
+      font-size: 11px; color: var(--text-2);
+      display: flex; align-items: center; gap: 4px; margin-top: 4px;
+    }
+    .src a { color: var(--teal); cursor: pointer; text-decoration: none; }
+    .src a:hover { text-decoration: underline; }
+
+    /* Follow-up chips */
+    .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .chip {
+      background: var(--white); border: 1px solid var(--border); border-radius: 100px;
+      padding: 4px 11px; font-size: 12px; cursor: pointer; color: var(--text-2);
+      transition: border-color 0.12s, color 0.12s;
+    }
+    .chip:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* Loading */
+    .dots span {
+      display: inline-block; width: 6px; height: 6px;
+      background: var(--teal); border-radius: 50%; margin: 0 2px;
+      animation: bob 1.1s infinite;
+    }
+    .dots span:nth-child(2) { animation-delay: 0.18s; }
+    .dots span:nth-child(3) { animation-delay: 0.36s; }
+    @keyframes bob {
+      0%, 80%, 100% { transform: translateY(0); opacity: 0.6; }
+      40% { transform: translateY(-5px); opacity: 1; }
+    }
+
+    /* ─── INPUT ─── */
+    .p-input-wrap { padding: 12px 14px; border-top: 1px solid var(--border); flex-shrink: 0; }
+    .p-input-box {
+      border: 1.5px solid var(--border); border-radius: 10px; overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .p-input-box:focus-within { border-color: var(--teal); }
+    .p-input-box textarea {
+      width: 100%; border: none; outline: none;
+      padding: 10px 14px; font-size: 13px; font-family: inherit;
+      resize: none; min-height: 40px; max-height: 96px; line-height: 1.5; background: var(--white);
+    }
+    .p-input-foot {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 5px 10px 6px; background: var(--bg);
+    }
+    .ctx-label { font-size: 11px; color: var(--text-2); display: flex; align-items: center; gap: 4px; }
+    .ctx-name { color: var(--teal); font-weight: 500; }
+    .send {
+      width: 27px; height: 27px; background: var(--teal); border: none;
+      border-radius: 6px; cursor: pointer; display: flex; align-items: center;
+      justify-content: center; transition: background 0.12s;
+    }
+    .send:hover { background: var(--teal-dark); }
+
+    /* ─── SCROLLBAR ─── */
+    .p-msgs::-webkit-scrollbar { width: 4px; }
+    .p-msgs::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  </style>
+</head>
+<body>
+
+<!-- ═══ NAV ═══ -->
+<nav class="nav">
+  <div class="logo">
+    <span class="logo-brand">zeenea</span>
+    <span class="logo-sub">explorer</span>
+  </div>
+  <div class="nav-right">
+    <button class="nav-ai-btn" id="fab" onclick="openPanel()" title="Ask your data">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        <circle cx="9" cy="10" r="0.7" fill="white" stroke="none"/>
+        <circle cx="12" cy="10" r="0.7" fill="white" stroke="none"/>
+        <circle cx="15" cy="10" r="0.7" fill="white" stroke="none"/>
+      </svg>
+      <div class="ai-badge"></div>
+    </button>
+    <div class="nav-label">What's new <div class="nav-dot"></div></div>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+      <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+    <div class="nav-avatar">OV</div>
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <svg class="hero-waves" viewBox="0 0 1440 220" preserveAspectRatio="none">
+    <path d="M0,110 C240,40 480,180 720,110 C960,40 1200,180 1440,110" stroke="#00B5AD" stroke-width="1.5" fill="none"/>
+    <path d="M0,130 C200,60 440,190 680,120 C920,50 1160,190 1440,130" stroke="#00B5AD" stroke-width="1" fill="none"/>
+    <path d="M0,90 C260,20 500,160 740,90 C980,20 1220,160 1440,90" stroke="#00B5AD" stroke-width="0.8" fill="none"/>
+    <path d="M0,150 C180,80 420,200 660,130 C900,60 1140,200 1380,150 L1440,150" stroke="#00B5AD" stroke-width="0.6" fill="none"/>
+    <path d="M0,70 C280,10 520,150 760,70 C1000,10 1240,150 1440,70" stroke="#00B5AD" stroke-width="0.5" fill="none"/>
+  </svg>
+  <div class="hero-inner">
+    <h1 class="hero-title">Discover Your Data Assets</h1>
+    <div class="search-container">
+      <div class="search-wrap" id="searchWrap">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2.2">
+          <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        </svg>
+        <input type="text" placeholder="Search for items" id="searchInput"
+               onfocus="showSearchDropdown()" onblur="hideSearchDropdown()">
+      </div>
+      <div class="search-dropdown" id="searchDropdown">
+        <div class="sd-simple">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          For simple search, keep typing above
+        </div>
+        <div class="sd-ai" onmousedown="openAssistantFromSearch()">
+          <div class="sd-ai-left">
+            <div class="sd-ai-icon">✦</div>
+            <div class="sd-ai-text">
+              <strong>Open Data Assistant</strong>
+              <span>Ask complex questions and get answers from trusted data</span>
+            </div>
+          </div>
+          <div class="sd-ai-arrow">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+            </svg>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MAIN ═══ -->
+<main class="main">
+
+  <!-- Topics -->
+  <div class="sec-head">
+    <div class="sec-title">Topics <span class="badge">1</span></div>
+    <a class="link">Browse all topics</a>
+  </div>
+  <p class="sec-desc">Navigate specific use cases with these pre-configured collections of results.</p>
+  <div class="topic-card">
+    <div class="topic-icon">Ma</div>
+    <div class="topic-name">Marketplace</div>
+    <div class="topic-desc">Explore high quality data assets that are ready for use. The Marketplace is a great place to…</div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- Catalog types -->
+  <div class="sec-head">
+    <div class="sec-title">Catalog item types <span class="badge">5</span></div>
+  </div>
+  <p class="sec-desc">Categorize and facilitate exploration of data assets and concepts.</p>
+  <div class="type-grid">
+    <div class="type-card">
+      <div><span class="type-pill pill-dataset">Dataset <strong>230</strong></span></div>
+      <div class="type-desc">Physical representations of data objects such as tables in a database, files in a file system, or collections in a NoSQL store.</div>
+    </div>
+    <div class="type-card">
+      <div><span class="type-pill pill-process">Data process <strong>75</strong></span></div>
+      <div class="type-desc">Data transformation pipelines.</div>
+    </div>
+    <div class="type-card">
+      <div><span class="type-pill pill-usecase">Use case <strong>22</strong></span></div>
+      <div class="type-desc">A specific scenario in which data is used by defined roles to achieve a business objective.</div>
+    </div>
+    <div class="type-card">
+      <div><span class="type-pill pill-category">Category <strong>9</strong></span></div>
+      <div class="type-desc">Classify datasets into groups defined by certain concepts.</div>
+    </div>
+    <div class="type-card">
+      <div><span class="type-pill pill-security">Security point <strong>3</strong></span></div>
+      <div class="type-desc">No description</div>
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══ OVERLAY ═══ -->
+<div class="overlay" id="overlay" onclick="closePanel()" style="cursor:default;"></div>
+
+
+<!-- ═══ PANEL ═══ -->
+<div class="panel" id="panel">
+
+  <!-- Header -->
+  <div class="p-head">
+    <div class="p-title">
+      <div class="p-icon">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#00B5AD" stroke-width="2.2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      </div>
+      <div>
+        <div style="display:flex;align-items:center;">
+          <span class="p-name">Data Assistant</span>
+          <button class="p-new" onclick="resetChat()">New chat ∨</button>
+        </div>
+      </div>
+    </div>
+    <div class="p-btns">
+      <button class="p-btn" id="expandBtn" onclick="toggleExpand()" title="Expand">
+        <svg id="expandIcon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M15 3h6v6"/><path d="M9 21H3v-6"/>
+          <path d="M21 3l-7 7"/><path d="M3 21l7-7"/>
+        </svg>
+      </button>
+      <button class="p-btn" title="Settings">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      </button>
+      <button class="p-btn" onclick="closePanel()" title="Close">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+          <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- Messages -->
+  <div class="p-msgs" id="msgs">
+    <div id="welcome">
+      <div class="welcome">
+        <div class="welcome-icon">✦</div>
+        <h3>Ask your data</h3>
+        <p>Get answers backed by your trusted catalogue. Ask about metrics, performance, datasets, or definitions.</p>
+        <div class="sugg-list">
+          <div class="sugg" onclick="ask('What does view_users_weekly_renewal mean?')">
+            📖 &nbsp;What does <strong>view_users_weekly_renewal</strong> mean?
+          </div>
+          <div class="sugg" onclick="ask('How many active subscriptions now vs last year?')">
+            📊 &nbsp;Active subscriptions — now vs last year
+          </div>
+          <div class="sugg" onclick="ask('Show Cupra Born sales in Netherlands by month Q1 2025')">
+            📈 &nbsp;Cupra Born sales in Netherlands — Q1 2025
+          </div>
+          <div class="sugg" onclick="ask('Find datasets about store performance')">
+            🗂 &nbsp;Find datasets about store performance
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Input -->
+  <div class="p-input-wrap">
+    <div class="p-input-box">
+      <textarea id="tin" placeholder="Ask about your data…" rows="1" onkeydown="onKey(event)"></textarea>
+      <div class="p-input-foot">
+        <div class="ctx-label">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+          </svg>
+          Searching in: <span class="ctx-name">All trusted data</span>
+        </div>
+        <button class="send" onclick="doSend()">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m22 2-7 20-4-9-9-4 20-7z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+/* ── panel controls ── */
+function openPanel() {
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('on');
+  setTimeout(() => document.getElementById('tin').focus(), 320);
+}
+function closePanel() {
+  const panel = document.getElementById('panel');
+  const isExpanded = panel.classList.contains('expanded');
+
+  if (isExpanded) {
+    // Expanded (centered) state: fade + scale out, then clean up
+    panel.style.transition = 'opacity 0.22s ease, transform 0.22s ease';
+    panel.style.opacity = '0';
+    panel.style.transform = 'translate(-50%, -50%) scale(0.95)';
+    setTimeout(() => {
+      panel.style.transition = '';
+      panel.style.opacity = '';
+      panel.style.transform = '';
+      panel.classList.remove('open', 'expanded');
+      finishClose();
+    }, 230);
+  } else {
+    // Right-side panel: slide off to the right as before
+    panel.classList.remove('open');
+    finishClose();
+  }
+}
+function finishClose() {
+  document.getElementById('overlay').classList.remove('on');
+  resetExpandIcon();
+}
+function resetExpandIcon() {
+  document.getElementById('expandIcon').innerHTML =
+    '<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>';
+  document.getElementById('expandBtn').title = 'Expand';
+}
+function showSearchDropdown() {
+  document.getElementById('searchWrap').classList.add('focused');
+  document.getElementById('searchDropdown').classList.add('visible');
+}
+function hideSearchDropdown() {
+  // small delay so onmousedown on the CTA fires before blur hides it
+  setTimeout(() => {
+    document.getElementById('searchWrap').classList.remove('focused');
+    document.getElementById('searchDropdown').classList.remove('visible');
+  }, 150);
+}
+function openAssistantFromSearch() {
+  const panel = document.getElementById('panel');
+  // open then immediately expand so it appears centered (same axis as search bar)
+  panel.classList.add('open');
+  document.getElementById('overlay').classList.add('on');
+  if (!panel.classList.contains('expanded')) toggleExpand();
+  setTimeout(() => document.getElementById('tin').focus(), 320);
+}
+function toggleExpand() {
+  const panel = document.getElementById('panel');
+  // Only works while panel is open — never closes it
+  if (!panel.classList.contains('open')) return;
+  const icon = document.getElementById('expandIcon');
+  const isExpanded = panel.classList.toggle('expanded');
+  icon.innerHTML = isExpanded
+    ? '<path d="M8 3H3v5"/><path d="M21 16v5h-5"/><path d="M3 8l7 7"/><path d="M21 21l-7-7"/>'
+    : '<path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/>';
+  document.getElementById('expandBtn').title = isExpanded ? 'Collapse' : 'Expand';
+}
+function resetChat() {
+  document.getElementById('msgs').innerHTML = '';
+  const w = document.createElement('div');
+  w.id = 'welcome';
+  w.innerHTML = `<div class="welcome">
+    <div class="welcome-icon">✦</div>
+    <h3>Ask your data</h3>
+    <p>Get answers backed by your trusted catalogue. Ask about metrics, performance, datasets, or definitions.</p>
+    <div class="sugg-list">
+      <div class="sugg" onclick="ask('What does view_users_weekly_renewal mean?')">📖 &nbsp;What does <strong>view_users_weekly_renewal</strong> mean?</div>
+      <div class="sugg" onclick="ask('How many active subscriptions now vs last year?')">📊 &nbsp;Active subscriptions — now vs last year</div>
+      <div class="sugg" onclick="ask('Show Cupra Born sales in Netherlands by month Q1 2025')">📈 &nbsp;Cupra Born sales in Netherlands — Q1 2025</div>
+      <div class="sugg" onclick="ask('Find datasets about store performance')">🗂 &nbsp;Find datasets about store performance</div>
+    </div>
+  </div>`;
+  document.getElementById('msgs').appendChild(w);
+}
+
+function onKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSend(); }
+}
+function doSend() {
+  const t = document.getElementById('tin');
+  const v = t.value.trim();
+  if (!v) return;
+  ask(v);
+  t.value = '';
+}
+function ask(text) {
+  openPanel();
+  const msgs = document.getElementById('msgs');
+  const w = document.getElementById('welcome');
+  if (w) w.style.display = 'none';
+
+  // user bubble
+  const um = document.createElement('div');
+  um.className = 'msg-u';
+  um.innerHTML = `<div class="bubble-u">${text}</div>`;
+  msgs.appendChild(um);
+
+  // loading
+  const lm = document.createElement('div');
+  lm.className = 'msg-a';
+  lm.innerHTML = `<div class="ai-av">✦</div><div class="ai-body"><div class="dots"><span></span><span></span><span></span></div></div>`;
+  msgs.appendChild(lm);
+  msgs.scrollTop = msgs.scrollHeight;
+
+  setTimeout(() => {
+    msgs.removeChild(lm);
+    const r = respond(text);
+    msgs.appendChild(r);
+    msgs.scrollTop = msgs.scrollHeight;
+    // init charts after DOM insert
+    requestAnimationFrame(() => {
+      if (document.getElementById('barChart')) initBar();
+      if (document.getElementById('lineChart')) initLine();
+    });
+  }, 1100);
+}
+
+/* ── response routing ── */
+function respond(text) {
+  const t = text.toLowerCase();
+  if (t.includes('view_users') || (t.includes('what does') && t.includes('mean'))) return defCard();
+  if (t.includes('subscription') || t.includes('last year')) return kpiCard();
+  if (t.includes('cupra') || t.includes('q1 2025') || t.includes('month') || t.includes('growth') || t.includes('sales')) return chartCard();
+  if (t.includes('dataset') || t.includes('store performance') || t.includes('find')) return dsCard();
+  return noAnswer();
+}
+
+/* ── Definition card ── */
+function defCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📖 Definition</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="def-term">view_users_weekly_renewal</div>
+      <div class="def-body">
+        A dataset view capturing user renewal events on a rolling 7-day window.
+        Each row represents one renewal event with subscription tier, renewal date,
+        and user identifier. Used to track weekly recurring revenue at the user level.
+      </div>
+      <div class="def-tags">
+        <span class="def-tag">🗄 subscriptions_db</span>
+        <span class="def-tag">👤 Data Platform team</span>
+        <span class="def-tag">🕐 Updated daily</span>
+        <span class="def-tag">⭐ Quality 94%</span>
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      Glossary · <a>subscriptions_db.view_users_weekly_renewal</a>
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="ask('What fields does view_users_weekly_renewal have?')">What fields?</div>
+      <div class="chip" onclick="ask('Show weekly renewal trend')">Renewal trend</div>
+      <div class="chip" onclick="ask('Who owns this dataset?')">Who owns this?</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── KPI card ── */
+function kpiCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📊 Metric comparison — Active subscriptions</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="kpi-row">
+        <div class="kpi-box">
+          <div class="kpi-lbl">Now — Apr 2026</div>
+          <div class="kpi-val">142<span class="kpi-unit">K</span></div>
+          <div><span class="kpi-delta up">↑ +18.4%</span></div>
+        </div>
+        <div class="kpi-box">
+          <div class="kpi-lbl">Apr 2025</div>
+          <div class="kpi-val">119<span class="kpi-unit">K</span></div>
+          <div><span class="kpi-delta flat">baseline</span></div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:90px;">
+        <canvas id="lineChart"></canvas>
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <a>subscriptions.active_subscriptions_daily</a> · as of today
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="ask('Break down by plan type')">By plan type</div>
+      <div class="chip" onclick="ask('Show churn rate')">Churn rate</div>
+      <div class="chip" onclick="ask('Monthly breakdown 2026')">Monthly 2026</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── Chart card ── */
+function chartCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">📈 Trend — Cupra Born · Netherlands · Q1 2025</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas id="barChart"></canvas>
+      </div>
+      <div class="chart-mini">
+        <div class="chart-mini-box">
+          <div class="mini-lbl">January</div>
+          <div class="mini-val">312</div>
+          <div><span class="kpi-delta dn" style="font-size:11px;padding:1px 5px;">↓ −4%</span></div>
+        </div>
+        <div class="chart-mini-box">
+          <div class="mini-lbl">February</div>
+          <div class="mini-val">428</div>
+          <div><span class="kpi-delta up" style="font-size:11px;padding:1px 5px;">↑ +37%</span></div>
+        </div>
+        <div class="chart-mini-box">
+          <div class="mini-lbl">March</div>
+          <div class="mini-val">391</div>
+          <div><span class="kpi-delta dn" style="font-size:11px;padding:1px 5px;">↓ −9%</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+      <a>sales.vehicle_sales_eu</a> · model=Cupra Born, country=NL
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="ask('Compare Netherlands vs Germany Q1 2025')">vs Germany</div>
+      <div class="chip" onclick="ask('What drove the February spike?')">Feb spike?</div>
+      <div class="chip" onclick="ask('Show full year 2025 for Cupra Born')">Full year 2025</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── Dataset list card ── */
+function dsCard() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div class="acard-head">
+        <span class="acard-type">🗂 Datasets — 3 matches (trusted only)</span>
+        <span class="trust-pill">✓ Trusted</span>
+      </div>
+      <div class="ds-list">
+        <div class="ds-row">
+          <div>
+            <div class="ds-name">store_performance_daily</div>
+            <div class="ds-meta">retail_db · Updated daily · 2.1M rows</div>
+          </div>
+          <div class="q-dot" style="background:#10b981;" title="Quality 96%"></div>
+        </div>
+        <div class="ds-row">
+          <div>
+            <div class="ds-name">store_kpis_weekly_summary</div>
+            <div class="ds-meta">analytics_dw · Updated weekly · Aggregated</div>
+          </div>
+          <div class="q-dot" style="background:#10b981;" title="Quality 91%"></div>
+        </div>
+        <div class="ds-row">
+          <div>
+            <div class="ds-name">pos_transactions_by_store</div>
+            <div class="ds-meta">sales_db · Real-time · 45M rows</div>
+          </div>
+          <div class="q-dot" style="background:#f59e0b;" title="Quality 74%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="src">
+      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      3 of 7 matching · <a>View all in catalogue</a>
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="ask('Query store_performance_daily for last 30 days')">Query top result</div>
+      <div class="chip" onclick="ask('What KPIs are in store_kpis_weekly_summary?')">What KPIs?</div>
+      <div class="chip" onclick="ask('Why is pos_transactions_by_store amber quality?')">Why amber?</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── No match ── */
+function noAnswer() {
+  const el = document.createElement('div');
+  el.className = 'msg-a';
+  el.innerHTML = `
+  <div class="ai-av">✦</div>
+  <div class="ai-body">
+    <div class="acard">
+      <div style="font-size:13px;color:#6b7280;line-height:1.6;">
+        I couldn't find a matching dataset or metric for that in the trusted catalogue.
+        Try rephrasing, or browse datasets directly using the search bar.
+      </div>
+    </div>
+    <div class="chips">
+      <div class="chip" onclick="ask('Find datasets about store performance')">Browse datasets</div>
+    </div>
+  </div>`;
+  return el;
+}
+
+/* ── Charts ── */
+function initBar() {
+  const c = document.getElementById('barChart');
+  if (!c || c._init) return; c._init = true;
+  new Chart(c, {
+    type: 'bar',
+    data: {
+      labels: ['January', 'February', 'March'],
+      datasets: [{
+        data: [312, 428, 391],
+        backgroundColor: ['rgba(0,181,173,0.65)', 'rgba(0,181,173,1)', 'rgba(0,181,173,0.72)'],
+        borderRadius: 5, borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: c => ` ${c.parsed.y} units` } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 } } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 10 } } }
+      }
+    }
+  });
+}
+
+function initLine() {
+  const c = document.getElementById('lineChart');
+  if (!c || c._init) return; c._init = true;
+  new Chart(c, {
+    type: 'line',
+    data: {
+      labels: ['Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb', 'Mar', 'Apr'],
+      datasets: [
+        {
+          label: '2026', data: [110, 112, 118, 122, 128, 130, 133, 137, 140, 142],
+          borderColor: '#00B5AD', backgroundColor: 'rgba(0,181,173,0.08)',
+          fill: true, tension: 0.4, pointRadius: 0, borderWidth: 2,
+        },
+        {
+          label: '2025', data: [95, 97, 100, 103, 107, 109, 111, 113, 116, 119],
+          borderColor: '#d1d5db', fill: false, tension: 0.4,
+          pointRadius: 0, borderWidth: 1.5, borderDash: [4, 3],
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, position: 'top', labels: { font: { size: 10 }, boxWidth: 10, padding: 6 } },
+        tooltip: { callbacks: { label: c => ` ${c.parsed.y}K subs` } }
+      },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 9 } } },
+        y: { grid: { color: '#f3f4f6' }, ticks: { font: { size: 9 }, callback: v => v + 'K' } }
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
