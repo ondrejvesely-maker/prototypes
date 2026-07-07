@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Zeenea Marketplace — AI First (v2)</title>
+<style>
+:root{
+  --teal:#049B98;          /* Explorer theme-primary */
+  --teal-dark:#03787a;
+  --teal-light:#e5f5f4;
+  --blue:#0283BE;          /* Studio theme-primary */
+  --blue-light:#e3f2fb;
+  --text:#0c1421;
+  --text-2:#595968;
+  --text-3:#8a8a99;
+  --border:#DDDDE5;
+  --border-soft:#F5F5FA;
+  --bg:#FBFBFF;
+  --bg-2:#F5F5FA;
+  --white:#ffffff;
+  --green:#047800; --green-bg:#e3f4e1;
+  --amber:#D27B00; --amber-bg:#fdf2e0;
+  --red:#C12C11; --red-bg:#fbe7e3;
+  --sb-bg:#0e1117; --sb-text:#c9d1d9; --sb-muted:#6b7280;
+  --sb-hover:rgba(255,255,255,0.05); --sb-active:rgba(4,155,152,0.16); --sb-border:rgba(255,255,255,0.07);
+  --shadow:0 2px 12px rgba(0,0,0,0.06); --shadow-lg:0 12px 44px rgba(0,0,0,0.16);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Roboto',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--text)}
+.shell{display:flex;height:100vh}
+
+/* SIDEBAR */
+.sidebar{width:248px;flex-shrink:0;background:var(--sb-bg);display:flex;flex-direction:column;overflow:hidden}
+.sb-head{padding:15px 14px;border-bottom:1px solid var(--sb-border);display:flex;align-items:center;justify-content:space-between}
+.sb-logo{line-height:1.05;cursor:pointer}
+.sb-brand{font-size:17px;font-weight:800;color:var(--teal);letter-spacing:-0.5px;display:block}
+.sb-sub{font-size:9px;color:var(--teal);opacity:0.6;letter-spacing:2px}
+.sb-module{font-size:9px;color:var(--teal);opacity:0.85;letter-spacing:1px;display:block;margin-top:2px;text-transform:uppercase}
+.sb-new{display:flex;align-items:center;gap:5px;background:var(--teal);border:none;border-radius:7px;color:#fff;font-size:12px;font-weight:600;padding:6px 10px;cursor:pointer}
+.sb-new:hover{background:var(--teal-dark)}
+.sb-body{flex:1;overflow-y:auto;padding:8px 0}
+.sb-body::-webkit-scrollbar{width:3px}.sb-body::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.sb-sec{padding:14px 14px 4px}
+.sb-sec-label{font-size:10px;font-weight:600;letter-spacing:.8px;text-transform:uppercase;color:var(--sb-muted)}
+.sb-nav-item{padding:8px 12px;margin:1px 8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:9px;transition:background .12s}
+.sb-nav-item:hover{background:var(--sb-hover)}
+.sb-nav-item.active{background:var(--sb-active)}
+.sb-nav-icon{width:16px;height:16px;color:var(--sb-muted);flex-shrink:0}
+.sb-nav-item.active .sb-nav-icon{color:var(--teal)}
+.sb-nav-label{font-size:12.5px;color:var(--sb-text)}
+.sb-nav-item.active .sb-nav-label{color:var(--teal);font-weight:600}
+.sb-nav-count{margin-left:auto;font-size:10px;color:var(--sb-muted);background:rgba(255,255,255,.07);padding:1px 7px;border-radius:10px}
+.sb-nav-count.hot{background:var(--teal);color:#fff}
+.coll-item,.search-item{padding:7px 12px;margin:1px 8px;border-radius:6px;cursor:pointer;display:flex;align-items:center;gap:9px}
+.coll-item:hover,.search-item:hover{background:var(--sb-hover)}
+.coll-name,.search-name{font-size:12px;color:var(--sb-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.coll-count{margin-left:auto;font-size:10px;color:var(--sb-muted)}
+.search-when{font-size:10px;color:var(--sb-muted)}
+.domain-pills{padding:6px 10px 4px;display:flex;flex-wrap:wrap}
+.domain-pill{display:inline-flex;align-items:center;gap:5px;margin:2px 4px;padding:4px 9px;border-radius:20px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.09);cursor:pointer}
+.domain-pill:hover{background:rgba(4,155,152,.14);border-color:rgba(4,155,152,.35)}
+.domain-pill span{font-size:11px;color:var(--sb-text)}.domain-pill .c{font-size:10px;color:var(--sb-muted)}
+.sb-foot{padding:11px 14px;border-top:1px solid var(--sb-border);display:flex;align-items:center;gap:10px}
+.sb-avatar{width:28px;height:28px;background:#f97316;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700}
+.sb-uname{font-size:12px;color:var(--sb-text)}.sb-role{font-size:10px;color:var(--sb-muted)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg);position:relative}
+.topbar{height:52px;background:var(--white);border-bottom:1px solid var(--border);padding:0 22px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.breadcrumb{font-size:13px;color:var(--text-2);display:flex;align-items:center;gap:6px}
+.bc-home{cursor:pointer}.bc-home:hover{color:var(--teal)}.bc-sep{opacity:.35}.bc-cur{color:var(--text);font-weight:500}
+.topbar-right{display:flex;align-items:center;gap:8px}
+.tb-btn{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2);cursor:pointer;padding:6px 11px;border-radius:7px;border:1px solid var(--border);background:var(--white)}
+.tb-btn:hover{border-color:var(--teal);color:var(--teal-dark)}
+.tb-btn .badge{background:var(--teal);color:#fff;font-size:10px;font-weight:700;min-width:16px;height:16px;padding:0 4px;border-radius:9px;display:flex;align-items:center;justify-content:center}
+.tb-chip{display:flex;align-items:center;gap:5px;background:var(--teal-light);border:none;border-radius:20px;color:var(--teal-dark);font-size:11px;font-weight:600;padding:5px 12px}
+.content{flex:1;overflow-y:auto}
+.content::-webkit-scrollbar{width:7px}.content::-webkit-scrollbar-thumb{background:#d1d5db;border-radius:3px}
+.view{display:none}.view.on{display:block}
+
+/* HOME */
+.hero{background:var(--white);padding:46px 44px 38px;border-bottom:1px solid var(--border);position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 85% -10%,rgba(4,155,152,.09) 0%,transparent 60%)}
+.greeting{font-size:13px;color:var(--teal);font-weight:600;margin-bottom:6px}
+.h1{font-size:27px;font-weight:800;letter-spacing:-.5px;margin-bottom:6px}
+.hsub{font-size:14px;color:var(--text-2);margin-bottom:24px;max-width:560px}
+.intent-box{max-width:640px;background:var(--white);border:2px solid var(--teal);border-radius:14px;box-shadow:0 4px 24px rgba(4,155,152,.13);overflow:hidden}
+.intent-input{width:100%;border:none;outline:none;font-size:15px;color:var(--text);padding:16px 18px 6px;resize:none;height:54px;background:transparent;line-height:1.5;font-family:inherit}
+.intent-input::placeholder{color:#9ca3af}
+.intent-foot{display:flex;align-items:center;justify-content:space-between;padding:6px 12px 10px}
+.intent-hints{display:flex;gap:6px;flex-wrap:wrap}
+.hint{font-size:11px;color:var(--text-2);background:var(--bg-2);border:1px solid var(--border);border-radius:20px;padding:3px 10px;cursor:pointer}
+.hint:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark)}
+.send{width:34px;height:34px;background:var(--teal);border:none;border-radius:9px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.send:hover{background:var(--teal-dark)}
+.sug-label{font-size:11px;color:var(--text-2);margin:16px 0 8px}
+.sug-chips{display:flex;flex-wrap:wrap;gap:7px;max-width:640px}
+.sug{font-size:12px;background:var(--bg-2);border:1px solid var(--border);border-radius:20px;padding:5px 13px;cursor:pointer}
+.sug:hover{background:var(--teal-light);border-color:var(--teal);color:var(--teal-dark)}
+.home-grid{padding:26px 44px 48px;display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:980px}
+.sec-title{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);margin-bottom:12px}
+.wide{grid-column:span 2}
+.domain-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dcard{background:var(--white);border:1px solid var(--border);border-radius:10px;padding:14px 16px;cursor:pointer;transition:all .15s}
+.dcard:hover{border-color:var(--teal);box-shadow:0 2px 12px rgba(4,155,152,.1);transform:translateY(-1px)}
+.dc-icon{font-size:20px;margin-bottom:6px}.dc-name{font-size:13px;font-weight:600}.dc-count{font-size:11px;color:var(--text-2);margin-top:2px}
+.dc-bar{height:2px;background:var(--border);border-radius:2px;margin-top:10px;overflow:hidden}.dc-fill{height:100%;background:var(--teal)}
+.trend-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer}
+.trend-item:hover{background:var(--white)}
+.trend-rank{font-size:12px;color:var(--text-2);width:16px;text-align:center;font-weight:600}
+.trend-q{font-size:13px;flex:1}.trend-c{font-size:11px;color:var(--text-2)}.trend-up{font-size:10px;color:var(--green)}
+.feat{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:11px 14px;cursor:pointer;display:flex;gap:10px;margin-bottom:8px}
+.feat:hover{border-color:var(--teal);box-shadow:var(--shadow)}
+.feat-name{font-size:13px;font-weight:600}.feat-meta{font-size:11px;color:var(--text-2);margin-top:2px}.feat-ai{font-size:11px;color:var(--teal-dark);margin-top:4px;font-style:italic}
+
+/* DISCOVERY */
+.disc-head{background:var(--white);border-bottom:1px solid var(--border);padding:18px 28px}
+.qbox{display:flex;align-items:center;gap:10px;background:var(--bg-2);border:1.5px solid var(--border);border-radius:10px;padding:10px 14px;max-width:620px;cursor:text}
+.qbox:hover{border-color:var(--teal)}
+.qtext{font-size:14px;flex:1}
+.qclear{background:none;border:none;cursor:pointer;color:var(--text-2);font-size:17px;line-height:1}
+.ai-interp{display:flex;gap:8px;background:var(--teal-light);border:1px solid rgba(4,155,152,.22);border-radius:9px;padding:10px 14px;margin-top:12px;max-width:760px}
+.ai-interp .tx{font-size:12.5px;color:#08534f;line-height:1.5}.ai-interp .tx b{color:#063e3b}
+.disc-body{padding:20px 28px 60px;max-width:880px}
+.best-label{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.7px;text-transform:uppercase;color:var(--teal-dark);margin-bottom:10px}
+.rcard{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 20px;cursor:pointer;transition:all .15s;margin-bottom:12px}
+.rcard:hover{border-color:var(--teal);box-shadow:0 3px 16px rgba(4,155,152,.1)}
+.rcard.best{border:1.5px solid var(--teal);box-shadow:0 4px 20px rgba(4,155,152,.13)}
+.rc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap}
+.badge{font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.b-dataset{background:#eff6ff;color:#1d4ed8}.b-process{background:#fff7ed;color:#c2410c}.b-product{background:#f0fdf4;color:#15803d}.b-security{background:#fef3c7;color:#92400e}
+.b-domain{font-size:11px;color:var(--text-2);background:var(--bg-2);border:1px solid var(--border);padding:2px 8px;border-radius:20px}
+.b-q{display:flex;align-items:center;gap:4px;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+.b-q.hi{background:var(--green-bg);color:#065f46}.b-q.mid{background:var(--amber-bg);color:#92400e}
+.b-dot{width:6px;height:6px;border-radius:50%}.b-q.hi .b-dot{background:var(--green)}.b-q.mid .b-dot{background:var(--amber)}
+.b-pii{background:var(--red-bg);color:var(--red);font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px}
+.b-cert{background:var(--teal);color:#fff;font-size:11px;font-weight:600;padding:2px 9px;border-radius:20px;display:flex;align-items:center;gap:4px}
+.rc-name{font-size:16px;font-weight:700;margin-bottom:3px}
+.rc-meta{font-size:11px;color:var(--text-2);margin-bottom:8px}
+.rc-desc{font-size:13px;color:var(--text-2);line-height:1.5;margin-bottom:12px}
+.ai-note{display:flex;gap:9px;background:#f0fdfc;border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:10px 13px;margin-bottom:13px}
+.ai-note .tx{font-size:12px;color:#08534f;line-height:1.55}
+.rc-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.btn{border:none;border-radius:7px;font-size:12px;font-weight:600;padding:7px 14px;cursor:pointer;font-family:inherit}
+.btn-pri{background:var(--teal);color:#fff}.btn-pri:hover{background:var(--teal-dark)}
+.btn-pri.added{background:var(--green)}
+.btn-out{background:none;color:var(--teal-dark);border:1.5px solid var(--teal)}.btn-out:hover{background:var(--teal-light)}
+.btn-ghost{background:var(--bg-2);color:var(--text-2);border:1px solid var(--border)}.btn-ghost:hover{border-color:var(--teal);color:var(--teal-dark)}
+.alt-label{font-size:12px;font-weight:600;color:var(--text-2);margin:18px 0 10px}
+/* refine chips */
+.refine{display:flex;gap:7px;flex-wrap:wrap;margin:4px 0 18px}
+.refine .r{font-size:12px;background:var(--white);border:1px solid var(--border);border-radius:20px;padding:5px 12px;cursor:pointer;display:flex;align-items:center;gap:5px}
+.refine .r:hover{border-color:var(--teal);color:var(--teal-dark);background:var(--teal-light)}
+/* no match */
+.nomatch{background:var(--white);border:1px dashed var(--border);border-radius:14px;padding:32px;text-align:center;margin-top:6px}
+.nomatch .ic{font-size:30px;margin-bottom:10px}
+.nomatch h3{font-size:17px;margin-bottom:6px}
+.nomatch p{font-size:13.5px;color:var(--text-2);max-width:440px;margin:0 auto 18px;line-height:1.55}
+
+/* DATA BASKET */
+.basket-wrap{padding:26px 32px 60px;max-width:820px}
+.basket-wrap h2{font-size:21px;font-weight:800;margin-bottom:4px}
+.basket-wrap .sub{font-size:13.5px;color:var(--text-2);margin-bottom:22px}
+.bk-item{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;align-items:flex-start}
+.bk-item .x{margin-left:auto;background:none;border:none;color:var(--text-3);font-size:18px;cursor:pointer;line-height:1}
+.bk-item .x:hover{color:var(--red)}
+.bk-name{font-size:14.5px;font-weight:700}.bk-meta{font-size:11.5px;color:var(--text-2);margin-top:2px}
+.gov{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin:18px 0}
+.gov h4{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:7px}
+.gov-row{display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-top:1px solid var(--border-soft);font-size:13px;color:var(--text-2)}
+.gov-row:first-of-type{border-top:none}
+.gov-row .gi{flex-shrink:0;margin-top:1px}
+.gov-row b{color:var(--text)}
+.deliver h4{font-size:13px;font-weight:700;margin-bottom:10px}
+.dest-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.dest{background:var(--white);border:1.5px solid var(--border);border-radius:10px;padding:13px 15px;cursor:pointer;display:flex;align-items:center;gap:10px;font-size:13px;font-weight:500}
+.dest:hover{border-color:var(--teal)}
+.dest.sel{border-color:var(--teal);background:var(--teal-light);color:var(--teal-dark)}
+.dest .di{font-size:18px}
+.checkout-row{display:flex;gap:10px;align-items:center;margin-top:6px}
+.empty-basket{text-align:center;padding:60px 20px;color:var(--text-2)}
+.empty-basket .ic{font-size:34px;margin-bottom:12px}
+
+/* STEWARD BUILD */
+.steward{padding:24px 32px 70px;max-width:860px}
+.stw-head{display:flex;gap:13px;align-items:flex-start;margin-bottom:6px}
+.stw-avatar{width:42px;height:42px;border-radius:11px;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.stw-title{font-size:20px;font-weight:800}
+.stw-sub{font-size:13px;color:var(--text-2);margin-top:2px}
+.plan-badge{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--blue);background:var(--blue-light);padding:3px 10px;border-radius:20px;margin-top:8px}
+/* stepper */
+.stepper{display:flex;gap:0;margin:24px 0 18px}
+.stp{flex:1;display:flex;flex-direction:column;gap:6px;position:relative}
+.stp .dot{width:24px;height:24px;border-radius:50%;background:var(--border);color:var(--text-2);font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;z-index:2}
+.stp.done .dot{background:var(--teal);color:#fff}.stp.active .dot{background:var(--teal);color:#fff;box-shadow:0 0 0 4px var(--teal-light)}
+.stp .lab{font-size:11px;color:var(--text-2);font-weight:500}.stp.active .lab,.stp.done .lab{color:var(--text);font-weight:600}
+.stp .line{position:absolute;top:11px;left:24px;right:0;height:2px;background:var(--border);z-index:1}
+.stp.done .line{background:var(--teal)}
+.stp:last-child .line{display:none}
+/* chat bubbles */
+.bubble{background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px 18px;margin-bottom:12px}
+.bubble.user{background:var(--bg-2);border-color:var(--border-soft)}
+.bubble .who{font-size:11px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-bottom:8px;display:flex;align-items:center;gap:6px}
+.bubble.agent .who{color:var(--teal-dark)}.bubble.user .who{color:var(--text-2)}
+.bubble.approver .who{color:var(--blue)} .bubble.approver{border-color:var(--blue);background:var(--blue-light)}
+.bubble p{font-size:13.5px;color:var(--text-2);line-height:1.6;margin-bottom:8px}.bubble p:last-child{margin-bottom:0}.bubble p b{color:var(--text)}
+.prop{background:var(--bg);border:1px solid var(--border);border-radius:9px;padding:12px 14px;margin:10px 0}
+.prop .pt{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:8px}
+.port{display:flex;gap:9px;align-items:center;padding:6px 0;font-size:12.5px}
+.port .pi{font-size:10px;font-weight:700;color:#fff;background:var(--teal);border-radius:4px;padding:2px 6px}
+.port .pi.in{background:var(--text-3)}
+.schema-row{display:flex;gap:9px;align-items:center;background:var(--white);border:1px solid var(--border-soft);border-radius:6px;padding:6px 10px;margin-bottom:4px}
+.schema-row .ty{font-size:10px;font-weight:600;color:var(--text-2);background:var(--bg-2);padding:2px 6px;border-radius:4px;width:64px;text-align:center}
+.schema-row .nm{font-size:12px;font-weight:500}.schema-row .ds{font-size:11px;color:var(--text-2);margin-left:auto}
+.yaml{background:#0e1117;border-radius:9px;padding:14px 16px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:11.5px;color:#c9d1d9;line-height:1.6;overflow-x:auto;margin:10px 0}
+.yaml .k{color:#79c0ff}.yaml .v{color:#a5d6ff}.yaml .c{color:#8b949e}
+.qrule{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:5px 0;color:var(--text-2)}
+.qrule .ck{color:var(--teal)}
+.step-actions{display:flex;gap:10px;margin:8px 0 4px}
+.published{background:var(--green-bg);border:1px solid #a7d3a0;border-radius:12px;padding:22px;text-align:center}
+.published .ic{font-size:34px;margin-bottom:8px}
+.published h3{font-size:17px;color:#065f46;margin-bottom:5px}
+.published p{font-size:13px;color:#1a6b4a}
+
+/* REQUEST CONFIRMATION (clean handoff) */
+.confirm{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:26px;text-align:center;box-shadow:0 4px 24px rgba(4,155,152,.08)}
+.confirm .ic{width:54px;height:54px;border-radius:50%;background:var(--teal-light);display:flex;align-items:center;justify-content:center;margin:0 auto 14px}
+.confirm .ic svg{width:28px;height:28px;stroke:var(--teal-dark)}
+.confirm h3{font-size:19px;font-weight:800;color:var(--text);margin-bottom:6px}
+.confirm .lead{font-size:13.5px;color:var(--text-2);line-height:1.6;max-width:520px;margin:0 auto}
+.confirm .lead b{color:var(--text)}
+.req-meta{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border-soft);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin:20px 0 6px;text-align:left}
+.req-meta .cell{background:var(--white);padding:11px 14px}
+.req-meta .k{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text-3);margin-bottom:3px}
+.req-meta .v{font-size:13px;font-weight:600;color:var(--text)}
+.req-meta .v .pill{display:inline-flex;align-items:center;gap:5px;background:var(--amber-bg);color:#92400e;font-size:11px;font-weight:700;padding:2px 9px;border-radius:20px}
+.req-meta .v .pill .b-dot{width:6px;height:6px;border-radius:50%;background:var(--amber)}
+.next-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.6px;color:var(--text-2);margin:18px 0 2px}
+.next{text-align:left;margin-top:12px}
+.next-step{display:flex;gap:13px;align-items:flex-start;position:relative;padding-bottom:16px}
+.next-step:last-child{padding-bottom:0}
+.next-step .ns-rail{position:absolute;left:15px;top:30px;bottom:-2px;width:2px;background:var(--border)}
+.next-step:last-child .ns-rail{display:none}
+.next-step .ns-ic{width:32px;height:32px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;background:var(--bg-2);border:1px solid var(--border);z-index:1}
+.next-step.now .ns-ic{background:var(--teal);border-color:var(--teal)}
+.next-step .ns-body{padding-top:4px}
+.next-step .ns-h{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:8px}
+.next-step .ns-now{font-size:9.5px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--teal-dark);background:var(--teal-light);padding:1px 7px;border-radius:20px}
+.next-step .ns-p{font-size:12px;color:var(--text-2);line-height:1.5;margin-top:3px}
+.next-step.future{opacity:.65}
+
+/* MY REQUESTS LIST */
+.req-wrap{padding:26px 32px 60px;max-width:780px}
+.req-head{margin-bottom:18px}
+.req-h{font-size:22px;font-weight:800;margin-bottom:4px}
+.req-hsub{font-size:13px;color:var(--text-2);max-width:580px;line-height:1.55}
+.req-stat{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:11px;font-weight:700;padding:3px 11px;border-radius:20px;white-space:nowrap}
+.st .d{width:6px;height:6px;border-radius:50%}
+.st.approved{background:var(--green-bg);color:#065f46}.st.approved .d{background:var(--green)}
+.st.waiting{background:var(--amber-bg);color:#92400e}.st.waiting .d{background:var(--amber)}
+.st.declined{background:#fbe9e7;color:#b3261e}.st.declined .d{background:#c0362c}
+.req-row{display:flex;gap:14px;align-items:flex-start;background:var(--white);border:1px solid var(--border);border-radius:11px;padding:15px 17px;margin-bottom:10px}
+.req-ic{width:34px;height:34px;border-radius:9px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff}
+.req-ic.approved{background:var(--green)}.req-ic.waiting{background:var(--amber)}.req-ic.declined{background:#c0362c}
+.req-main{flex:1;min-width:0}
+.req-top{display:flex;align-items:flex-start;gap:12px;justify-content:space-between}
+.req-name{font-size:14px;font-weight:700;color:var(--text)}
+.req-sub{font-size:11.5px;color:var(--text-3);margin-top:3px}
+.req-note{font-size:12.5px;color:var(--text-2);line-height:1.55;margin-top:7px}
+.req-note b{color:var(--text)}
+.req-reason{display:inline-flex;align-items:center;gap:6px;font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:10.5px;font-weight:600;color:#b3261e;background:#fbe9e7;border:1px solid #f3c9c4;border-radius:6px;padding:3px 9px;margin-top:9px}
+.req-reason svg{width:12px;height:12px;stroke:#b3261e;flex-shrink:0}
+
+/* RATINGS */
+.stars{position:relative;display:inline-block;font-size:13px;line-height:1;font-family:Arial,sans-serif;white-space:nowrap;vertical-align:middle}
+.stars .bg{color:#d9d9e3}
+.stars .fg{color:#f5a623;position:absolute;top:0;left:0;overflow:hidden;white-space:nowrap}
+.rating-inline{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;color:var(--text-2)}
+.rating-inline b{color:var(--text);font-weight:600}
+.rate-box{background:var(--bg-2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:10px}
+.rate-box .rl{font-size:12.5px;color:var(--text-2);margin-bottom:8px}
+.rate-stars{display:inline-flex;gap:4px}
+.rate-stars .rs{font-size:27px;line-height:1;color:#d9d9e3;cursor:pointer;font-family:Arial,sans-serif}
+.rate-stars .rs.on{color:#f5a623}
+.rate-stars:hover .rs{color:#f5a623}
+.rate-stars .rs:hover ~ .rs{color:#d9d9e3}
+.rate-thanks{font-size:12.5px;color:var(--green);font-weight:600;margin-top:9px}
+.agg-row{display:flex;align-items:center;gap:9px;margin-bottom:6px}
+.agg-row .av{font-size:20px;font-weight:800}
+.agg-row .ct{font-size:12px;color:var(--text-2)}
+.review{border-top:1px solid var(--border-soft);padding:10px 0;font-size:12.5px}
+.review:first-of-type{border-top:none}
+.review .rh{display:flex;align-items:center;gap:8px;margin-bottom:4px}
+.review .ra{width:22px;height:22px;border-radius:50%;background:var(--teal);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.review .rn{font-weight:600;font-size:12px}
+.review .rw{color:var(--text-3);font-size:11px;margin-left:auto}
+.review .rt{color:var(--text-2);line-height:1.5}
+
+/* DETAIL DRAWER */
+.overlay{position:absolute;inset:0;background:rgba(0,0,0,.24);opacity:0;pointer-events:none;transition:opacity .22s;z-index:200}
+.overlay.on{opacity:1;pointer-events:all}
+.drawer{position:absolute;top:0;right:0;bottom:0;width:520px;max-width:92vw;background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);z-index:201}
+.drawer.open{transform:translateX(0)}
+.dh{padding:18px 22px 14px;border-bottom:1px solid var(--border)}
+.dh-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.dh-close{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text-2);font-size:21px;line-height:1}
+.dh-name{font-size:18px;font-weight:800}.dh-sub{font-size:12px;color:var(--text-2)}
+.db{flex:1;overflow-y:auto;padding:18px 22px 26px}
+.db-ai{background:#f0fdfc;border:1px solid rgba(4,155,152,.25);border-left:3px solid var(--teal);border-radius:0 10px 10px 0;padding:13px 16px;margin-bottom:18px}
+.db-ai .lb{font-size:10px;font-weight:700;letter-spacing:.8px;text-transform:uppercase;color:var(--teal-dark);margin-bottom:5px;display:flex;gap:5px;align-items:center}
+.db-ai .bd{font-size:13px;color:#08534f;line-height:1.6}
+.db-sec{margin-bottom:18px}
+.db-st{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.7px;color:var(--text-2);margin-bottom:9px}
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.mi{background:var(--bg-2);border-radius:8px;padding:9px 12px}
+.mi .ml{font-size:10px;text-transform:uppercase;letter-spacing:.5px;color:var(--text-2);margin-bottom:3px}
+.mi .mv{font-size:13px;font-weight:500}
+.contract{border:1px solid var(--border);border-radius:9px;padding:12px 14px;background:var(--bg)}
+.contract .ct{font-size:12px;font-weight:700;display:flex;align-items:center;gap:6px;margin-bottom:8px}
+.contract .cr{font-size:12px;color:var(--text-2);padding:3px 0;display:flex;gap:8px}.contract .cr b{color:var(--text)}
+.qbar{margin-bottom:8px}.qbl{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}
+.qbn{color:var(--text-2)}.qbv{font-weight:600}
+.qbt{height:6px;background:var(--border);border-radius:3px;overflow:hidden}.qbf{height:100%;border-radius:3px}.qbf.hi{background:var(--green)}.qbf.mid{background:var(--amber)}
+.db-actions{display:flex;gap:9px;padding:14px 22px;border-top:1px solid var(--border)}
+
+/* MCP / agent modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.42);opacity:0;pointer-events:none;transition:opacity .2s;z-index:300;display:flex;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.on{opacity:1;pointer-events:all}
+.modal{background:var(--white);border-radius:16px;width:560px;max-width:100%;max-height:86vh;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--shadow-lg);transform:translateY(12px);transition:transform .2s}
+.modal-overlay.on .modal{transform:none}
+.modal-h{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.modal-h .ic{width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--blue));display:flex;align-items:center;justify-content:center}
+.modal-h .t{font-size:14px;font-weight:700}.modal-h .s{font-size:11px;color:var(--text-2)}
+.modal-h .close{margin-left:auto;background:none;border:none;font-size:20px;color:var(--text-2);cursor:pointer}
+.modal-b{padding:18px 20px;overflow-y:auto}
+.mcp-msg{margin-bottom:14px}
+.mcp-msg .role{font-size:11px;font-weight:700;color:var(--text-3);margin-bottom:5px}
+.mcp-user{background:var(--bg-2);border-radius:10px;padding:10px 13px;font-size:13px}
+.mcp-tool{font-family:ui-monospace,Menlo,monospace;font-size:11px;background:#0e1117;color:#c9d1d9;border-radius:8px;padding:9px 12px;margin:7px 0}
+.mcp-tool .fn{color:#79c0ff}.mcp-tool .ok{color:#56d364}
+.mcp-ans{border:1px solid var(--teal);background:var(--teal-light);border-radius:10px;padding:12px 14px;font-size:13px;color:#08534f;line-height:1.55}
+.mcp-ans b{color:#063e3b}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo" onclick="go('home')">
+        <span class="sb-brand">zeenea</span>
+        <span class="sb-sub">explorer</span>
+        <span class="sb-module">marketplace</span>
+      </div>
+      <button class="sb-new" onclick="go('home')">+ New search</button>
+    </div>
+    <div class="sb-body">
+      <div class="sb-sec"><span class="sb-sec-label">Browse</span></div>
+      <div class="sb-nav-item active" id="nav-home" onclick="go('home')">
+        <svg class="sb-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        <span class="sb-nav-label">Marketplace</span><span class="sb-nav-count">326</span>
+      </div>
+      <div class="sb-nav-item" id="nav-basket" onclick="go('basket')">
+        <svg class="sb-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+        <span class="sb-nav-label">Data basket</span><span class="sb-nav-count" id="sb-basket-count" style="display:none">0</span>
+      </div>
+      <div class="sb-nav-item" id="nav-requests" onclick="go('requests')">
+        <svg class="sb-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        <span class="sb-nav-label">My requests</span><span class="sb-nav-count" id="reqCount">3</span>
+      </div>
+      <div class="sb-nav-item" onclick="startSearch('my saved data products')">
+        <svg class="sb-nav-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+        <span class="sb-nav-label">Saved</span><span class="sb-nav-count">8</span>
+      </div>
+
+      <div class="sb-sec" style="margin-top:6px"><span class="sb-sec-label">Recent searches</span></div>
+      <div class="search-item" onclick="startSearch('Q1 2025 European sales by country, certified, no PII')">
+        <div><div class="search-name">Q1 2025 European sales, no PII</div><div class="search-when">2 days ago · 3 results</div></div>
+      </div>
+      <div class="search-item" onclick="startSearch('customer lifetime value by segment, monthly')">
+        <div><div class="search-name">customer lifetime value by segment</div><div class="search-when">today · no good match</div></div>
+      </div>
+
+      <div class="sb-sec" style="margin-top:6px"><span class="sb-sec-label">Collections</span></div>
+      <div class="coll-item"><span>📦</span><span class="coll-name">Sales Analysis Pack</span><span class="coll-count">4</span></div>
+      <div class="coll-item"><span>👥</span><span class="coll-name">Customer Analytics Kit</span><span class="coll-count">5</span></div>
+
+      <div class="sb-sec" style="margin-top:6px"><span class="sb-sec-label">Domains</span></div>
+      <div class="domain-pills">
+        <div class="domain-pill" onclick="startSearch('Sales and Revenue data products')"><span>Sales &amp; Revenue</span><span class="c">32</span></div>
+        <div class="domain-pill" onclick="startSearch('Customer Analytics datasets')"><span>Customer Analytics</span><span class="c">18</span></div>
+        <div class="domain-pill" onclick="startSearch('security and compliance datasets')"><span>Security</span><span class="c">7</span></div>
+      </div>
+    </div>
+    <div class="sb-foot">
+      <div class="sb-avatar">OV</div>
+      <div><div class="sb-uname">Ondrej Vesely</div><div class="sb-role">Business Analyst</div></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div class="breadcrumb">
+        <span class="bc-home" onclick="go('home')">Marketplace</span>
+        <span class="bc-sep" id="bcSep" style="display:none">/</span>
+        <span class="bc-cur" id="bcCur"></span>
+      </div>
+      <div class="topbar-right">
+        <div class="tb-btn" onclick="openMcp()" title="See how an AI agent uses the marketplace over MCP">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4M8 16h0M16 16h0"/></svg>
+          Ask AI (MCP)
+        </div>
+        <div class="tb-btn" onclick="go('basket')">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+          Basket <span class="badge" id="tb-basket-badge" style="display:none">0</span>
+        </div>
+        <div class="tb-chip">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3"/></svg>
+          AI assist on
+        </div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- HOME -->
+      <div class="view on" id="view-home">
+        <div class="hero">
+          <div class="hero-bg"></div>
+          <div class="greeting">Good morning, Ondra</div>
+          <div class="h1">Find the right data product</div>
+          <div class="hsub">Describe the outcome you want in plain language. The marketplace reads your intent against the knowledge graph and hands back the best-fit product, with its quality and caveats already explained.</div>
+          <div class="intent-box">
+            <textarea class="intent-input" id="intentInput" placeholder="e.g. 'Q1 2025 European sales by country, certified, no PII'" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();searchInput()}"></textarea>
+            <div class="intent-foot">
+              <div class="intent-hints">
+                <span class="hint" onclick="fillHint('Q1 2025 European sales by country, certified, no PII')">European sales, no PII</span>
+                <span class="hint" onclick="fillHint('customer lifetime value by segment, monthly')">Customer lifetime value</span>
+                <span class="hint" onclick="fillHint('active users and engagement metrics')">Active users</span>
+              </div>
+              <button class="send" onclick="searchInput()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+            </div>
+          </div>
+          <div class="sug-label">Try a scenario</div>
+          <div class="sug-chips">
+            <span class="sug" onclick="startSearch('Q1 2025 European sales by country, certified, no PII')">🅰 Discover &amp; activate a product</span>
+            <span class="sug" onclick="startSearch('customer lifetime value by segment, monthly')">🅱 Request a missing product</span>
+            <span class="sug" onclick="startSearch('customer accounts with contact details')">🅲 Request PII data</span>
+            <span class="sug" onclick="openMcp()">🅳 Agent shops over MCP</span>
+          </div>
+        </div>
+        <div class="home-grid">
+          <div>
+            <div class="sec-title">Browse by domain</div>
+            <div class="domain-cards">
+              <div class="dcard" onclick="startSearch('Sales and Revenue data products')"><div class="dc-icon">📊</div><div class="dc-name">Sales &amp; Revenue</div><div class="dc-count">32 data products</div><div class="dc-bar"><div class="dc-fill" style="width:82%"></div></div></div>
+              <div class="dcard" onclick="startSearch('Customer Analytics datasets')"><div class="dc-icon">👥</div><div class="dc-name">Customer Analytics</div><div class="dc-count">18 data products</div><div class="dc-bar"><div class="dc-fill" style="width:68%"></div></div></div>
+              <div class="dcard" onclick="startSearch('operations data')"><div class="dc-icon">⚙️</div><div class="dc-name">Operations</div><div class="dc-count">21 data products</div><div class="dc-bar"><div class="dc-fill" style="width:74%"></div></div></div>
+              <div class="dcard" onclick="startSearch('security and compliance datasets')"><div class="dc-icon">🔒</div><div class="dc-name">Security</div><div class="dc-count">7 data products</div><div class="dc-bar"><div class="dc-fill" style="width:44%"></div></div></div>
+            </div>
+          </div>
+          <div>
+            <div class="sec-title">Most requested this month</div>
+            <div class="trend-item" onclick="openAsset('cupra')"><span class="trend-rank">1</span><span class="trend-q">Cupra Born Sales — Europe</span><span class="trend-c">47</span><span class="trend-up">↑</span></div>
+            <div class="trend-item" onclick="openAsset('humans')"><span class="trend-rank">2</span><span class="trend-q">Active Humans</span><span class="trend-c">31</span><span class="trend-up">↑</span></div>
+            <div class="trend-item" onclick="openAsset('churn')"><span class="trend-rank">3</span><span class="trend-q">Customer Churn Predictor</span><span class="trend-c">28</span><span class="trend-up">↑</span></div>
+            <div class="trend-item" onclick="startSearch('customer lifetime value by segment, monthly')"><span class="trend-rank">4</span><span class="trend-q">Customer lifetime value <span style="color:var(--amber)">(requested)</span></span><span class="trend-c">19</span><span class="trend-up">↑</span></div>
+          </div>
+          <div class="wide">
+            <div class="sec-title">Recently published by your domains</div>
+            <div class="feat" onclick="openAsset('cupra')"><span class="badge b-dataset">Dataset</span><div><div class="feat-name">Cupra Born Sales — Europe</div><div class="feat-meta">Sales &amp; Revenue · aws-redshift-tom · 3 days ago</div><div class="feat-ai">✦ Daily granularity by country and dealer, Jan 2022–present. Certified.</div></div></div>
+            <div class="feat" onclick="openAsset('humans')"><span class="badge b-product">Data product</span><div><div class="feat-name">Active Humans</div><div class="feat-meta">Customer Analytics · aws-glue-tom · 1 week ago</div><div class="feat-ai">✦ 30-min refresh, glossary-aligned definition of active_user reviewed by Legal.</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DISCOVERY -->
+      <div class="view" id="view-discovery">
+        <div class="disc-head">
+          <div class="qbox">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <span class="qtext" id="qtext"></span>
+            <button class="qclear" onclick="go('home')">×</button>
+          </div>
+          <div class="ai-interp"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#049B98" stroke-width="2" style="flex-shrink:0;margin-top:1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><div class="tx" id="interpText"></div></div>
+        </div>
+        <div class="disc-body" id="discBody"></div>
+      </div>
+
+      <!-- DATA BASKET -->
+      <div class="view" id="view-basket">
+        <div class="basket-wrap" id="basketWrap"></div>
+      </div>
+
+      <!-- STEWARD BUILD -->
+      <div class="view" id="view-steward">
+        <div class="steward" id="stewardWrap"></div>
+      </div>
+
+      <!-- MY REQUESTS -->
+      <div class="view" id="view-requests">
+        <div class="req-wrap" id="reqWrap"></div>
+      </div>
+
+    </div><!-- /content -->
+
+    <!-- DETAIL DRAWER -->
+    <div class="overlay" id="overlay" onclick="closeDrawer()"></div>
+    <div class="drawer" id="drawer">
+      <div class="dh">
+        <div class="dh-row" id="dhRow"></div>
+        <div class="dh-name" id="dhName"></div>
+        <div class="dh-sub" id="dhSub"></div>
+      </div>
+      <div class="db" id="dbBody"></div>
+      <div class="db-actions" id="dbActions"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MCP MODAL -->
+<div class="modal-overlay" id="mcpOverlay" onclick="if(event.target===this)closeMcp()">
+  <div class="modal">
+    <div class="modal-h">
+      <div class="ic"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/></svg></div>
+      <div><div class="t">Claude · connected to Actian MCP server</div><div class="s">An AI agent shops the marketplace as a first-class consumer</div></div>
+      <button class="close" onclick="closeMcp()">×</button>
+    </div>
+    <div class="modal-b" id="mcpBody"></div>
+  </div>
+</div>
+
+<script>
+/* ============ DATA ============ */
+const ASSETS={
+  cupra:{id:'cupra',type:'dataset',tl:'Dataset',name:'Cupra Born Sales — Europe',domain:'Sales & Revenue',source:'aws-redshift-tom',updated:'Updated 2h ago',q:87,qc:'hi',cert:true,pii:false,
+    desc:'Daily and monthly aggregated sales for the Cupra Born across European markets, Jan 2022–present, by country, dealer, channel and segment.',
+    why:'Best fit for European sales by country. It is certified, contains no PII, and covers Q1 2025 at daily granularity — everything your query asked for.',
+    ai:'Canonical source for European sales reporting. The Feb 2025 spike reflects a dealer expansion in the Netherlands and Belgium, documented in the metadata, not organic demand.',
+    contract:[['Schema','6 fields, stable v1.2'],['Freshness SLA','Daily by 06:00 UTC'],['Owner','Sales Analytics domain'],['Licence','Internal, all employees']],
+    qd:[['Completeness',94,'hi'],['Accuracy',87,'hi'],['Freshness',80,'hi']],
+    rating:4.6,ratings:34,reviews:[
+      {i:'JL',n:'Jonas L.',s:5,w:'2 weeks ago',t:'Exactly the European breakdown I needed. The dealer-expansion note saved me from a wrong conclusion in the board deck.'},
+      {i:'AM',n:'Aïcha M.',s:4,w:'1 month ago',t:'Reliable and well documented. Daily grain available without asking would bump this to five.'}]},
+  humans:{id:'humans',type:'product',tl:'Data product',name:'Active Humans',domain:'Customer Analytics',source:'aws-glue-tom',updated:'Updated 30m ago',q:92,qc:'hi',cert:true,pii:false,
+    desc:'Engagement and activity metrics used to compute active human user counts. 30-day rolling window plus lifetime aggregates.',
+    why:'A certified data product with a governed, Legal-reviewed definition of active_user. No PII — uses anonymised IDs.',
+    ai:'The go-to product for any activity or engagement question. "Active" means at least one meaningful interaction in 30 days; the definition is in the glossary.',
+    contract:[['Schema','5 fields, v2.0'],['Freshness SLA','Every 30 min'],['Owner','Customer Analytics domain'],['Licence','Internal']],
+    qd:[['Completeness',97,'hi'],['Accuracy',92,'hi'],['Freshness',95,'hi']],
+    rating:4.8,ratings:52,reviews:[
+      {i:'TS',n:'Tom S.',s:5,w:'3 days ago',t:'The governed active_user definition ended a long-running argument between two teams. Single source of truth.'},
+      {i:'PV',n:'Priya V.',s:5,w:'3 weeks ago',t:'Fast refresh, clean schema. We build three dashboards on this and never touch the raw logs.'}]},
+  churn:{id:'churn',type:'dataset',tl:'Dataset',name:'Customer Churn Predictor',domain:'Customer Analytics',source:'aws-athena-tom',updated:'Updated daily',q:78,qc:'mid',cert:false,pii:false,
+    desc:'ML churn probability scores for active subscribers, updated daily, with 30/60/90-day risk bands.',
+    why:'Related, but the model was last retrained in Nov 2024 and the SMB segment is flagged as less reliable. Useful as context, not as a certified source.',
+    ai:'Fine for historical analysis. For live decisions on SMB accounts, verify against raw engagement. Retraining is scheduled for Q3.',
+    contract:[['Schema','5 fields, v1.0'],['Freshness SLA','Daily, best effort'],['Owner','Customer Analytics domain'],['Licence','Internal']],
+    qd:[['Completeness',88,'hi'],['Accuracy',72,'mid'],['Freshness',82,'hi']],
+    rating:3.4,ratings:19,reviews:[
+      {i:'RP',n:'Rui P.',s:3,w:'1 week ago',t:'Useful but the SMB scores are shaky. Treat as directional until the Q3 retrain.'}]},
+  accounts:{id:'accounts',type:'dataset',tl:'Dataset',name:'Customer Accounts — Master',domain:'Customer Analytics',source:'aws-redshift-tom',updated:'Updated 1h ago',q:90,qc:'hi',cert:true,pii:true,
+    desc:'Master record of customer accounts including names, email, and contact details, joined to account status and tier.',
+    why:'Matches your request, but it contains personal data (names, email). Access routes through the PII security point before approval.',
+    ai:'Contains direct identifiers. You will be asked to acknowledge the PII handling policy as part of the access request. Masked columns are available if you do not need raw contact details.',
+    contract:[['Schema','9 fields, 3 classified PII'],['Freshness SLA','Hourly'],['Owner','Customer Data domain'],['Licence','Restricted — PII']],
+    qd:[['Completeness',96,'hi'],['Accuracy',90,'hi'],['Freshness',91,'hi']],
+    rating:4.1,ratings:12,reviews:[
+      {i:'KD',n:'Klara D.',s:4,w:'5 days ago',t:'Clean master data and the PII gate was painless — approved within a day.'}]}
+};
+
+/* search configs: which query -> what discovery shows */
+function resolve(q){
+  const s=q.toLowerCase();
+  if(s.includes('lifetime value')||s.includes('clv')) return {mode:'nomatch',interp:'Interpreted as <b>customer lifetime value by segment, monthly grain</b>. I searched Customer Analytics and Sales. The closest products (Active Humans, Churn Predictor) cover engagement and churn, but none combine lifetime revenue with your segment breakdown.',refine:[]};
+  if(s.includes('pii')&&(s.includes('no pii')||s.includes('certified'))) return {mode:'best',interp:'Interpreted as <b>European sales by country for Q1 2025</b>, filtered to <b>certified</b> products with <b>no PII</b>. One strong match.',best:'cupra',alts:['humans'],refine:['Only the last 12 months','Add monthly grain','What feeds this?']};
+  if(s.includes('account')||s.includes('contact')||s.includes('email')) return {mode:'best',interp:'Interpreted as <b>customer account records with contact details</b>. The best match contains personal data, so access is governed by the PII security point.',best:'accounts',alts:['humans'],refine:['Masked version only','Exclude PII']};
+  if(s.includes('active')||s.includes('engagement')||s.includes('user')) return {mode:'best',interp:'Interpreted as <b>user activity and engagement metrics</b>. Showing the certified product that owns the active-user definition.',best:'humans',alts:['churn'],refine:['Last 90 days','By segment']};
+  if(s.includes('sale')||s.includes('revenue')||s.includes('europe')) return {mode:'best',interp:'Interpreted as <b>European sales performance</b>. One certified best-fit product.',best:'cupra',alts:['humans'],refine:['Add monthly grain','Certified only']};
+  return {mode:'best',interp:'Showing the closest certified products across all domains for: <b>'+q+'</b>.',best:'humans',alts:['cupra','churn'],refine:['Certified only','No PII']};
+}
+
+/* ============ STATE ============ */
+let basket=[];
+let lastQuery='';
+let userRatings={};
+
+/* ============ RATINGS ============ */
+function displayStars(v){const pct=(Math.max(0,Math.min(5,v))/5*100).toFixed(1);return `<span class="stars"><span class="bg">★★★★★</span><span class="fg" style="width:${pct}%">★★★★★</span></span>`;}
+function agg(a){const ur=userRatings[a.id];const base=(a.rating||0)*(a.ratings||0);if(ur){return{avg:(base+ur)/((a.ratings||0)+1),count:(a.ratings||0)+1};}return{avg:a.rating||0,count:a.ratings||0};}
+function ratingInline(a){const g=agg(a);if(g.count===0)return `<span class="rating-inline" style="color:var(--text-3)">☆ New · no ratings</span>`;return `<span class="rating-inline">${displayStars(g.avg)}<b>${g.avg.toFixed(1)}</b>(${g.count})</span>`;}
+function rate(id,n){userRatings[id]=n;openAsset(id);}
+function ratingsSection(a){
+  const g=agg(a);const ur=userRatings[a.id]||0;
+  const head=g.count===0
+    ? `<div class="agg-row"><span class="ct">No ratings yet — be the first to rate it</span></div>`
+    : `<div class="agg-row">${displayStars(g.avg)}<span class="av">${g.avg.toFixed(1)}</span><span class="ct">${g.count} rating${g.count>1?'s':''}</span></div>`;
+  const widget=`<div class="rate-box"><div class="rl">${ur?'Your rating':'Rate this data product'}</div>
+    <div class="rate-stars">${[1,2,3,4,5].map(n=>`<span class="rs ${n<=ur?'on':''}" onclick="rate('${a.id}',${n})" title="${n} star${n>1?'s':''}">★</span>`).join('')}</div>
+    ${ur?`<div class="rate-thanks">✓ Thanks — you rated this ${ur} / 5. Your rating feeds back into ranking and trust.</div>`:''}</div>`;
+  const reviews=(a.reviews&&a.reviews.length)
+    ? `<div style="margin-top:12px">${a.reviews.map(r=>`<div class="review"><div class="rh"><span class="ra">${r.i}</span><span class="rn">${r.n}</span>${displayStars(r.s)}<span class="rw">${r.w}</span></div><div class="rt">${r.t}</div></div>`).join('')}</div>`
+    : '';
+  return `<div class="db-sec"><div class="db-st">Ratings &amp; reviews</div>${head}${widget}${reviews}</div>`;
+}
+
+/* ============ NAV ============ */
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('view-'+view).classList.add('on');
+  document.querySelectorAll('.sb-nav-item').forEach(n=>n.classList.remove('active'));
+  if(view==='home'){document.getElementById('nav-home').classList.add('active');setBc('');}
+  if(view==='basket'){document.getElementById('nav-basket').classList.add('active');renderBasket();setBc('Data basket');}
+  if(view==='requests'){document.getElementById('nav-requests').classList.add('active');renderRequests();setBc('My requests');}
+  closeDrawer();
+  document.querySelector('.content').scrollTop=0;
+}
+function setBc(t){document.getElementById('bcSep').style.display=t?'':'none';document.getElementById('bcCur').textContent=t;}
+function fillHint(t){document.getElementById('intentInput').value=t;document.getElementById('intentInput').focus();}
+function searchInput(){const v=document.getElementById('intentInput').value.trim();if(v)startSearch(v);}
+
+/* ============ DISCOVERY ============ */
+function startSearch(q){
+  lastQuery=q;
+  go('discovery');
+  setBc(q.length>46?q.slice(0,44)+'…':q);
+  document.getElementById('qtext').textContent=q;
+  const cfg=resolve(q);
+  document.getElementById('interpText').innerHTML=cfg.interp;
+  const body=document.getElementById('discBody');
+  if(cfg.mode==='nomatch'){
+    body.innerHTML=`
+      <div class="nomatch fade">
+        <div class="ic">🤔</div>
+        <h3>No product is a good enough match — yet</h3>
+        <p>I found related data, but nothing that combines lifetime revenue with your segment breakdown at a monthly grain. You can request it, and the Steward Agent will draft a governed data product from existing sources.</p>
+        <button class="btn btn-pri" style="padding:10px 20px" onclick="startSteward()">✦ Request a data product</button>
+      </div>`;
+    return;
+  }
+  let html=`<div class="best-label"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#03787a" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>Best match for your intent</div>`;
+  html+=card(ASSETS[cfg.best],true);
+  if(cfg.refine&&cfg.refine.length){
+    html+=`<div class="refine">`+cfg.refine.map(r=>`<span class="r" onclick="startSearch('${(q+' — '+r).replace(/'/g,'')}')">✦ ${r}</span>`).join('')+`</div>`;
+  }
+  if(cfg.alts&&cfg.alts.length){
+    html+=`<div class="alt-label">Other products you might consider</div>`;
+    cfg.alts.forEach(id=>{html+=card(ASSETS[id],false);});
+  }
+  body.innerHTML=html;
+  refreshButtons();
+}
+function card(a,best){
+  return `<div class="rcard ${best?'best':''} fade">
+    <div class="rc-top">
+      <span class="badge b-${a.type}">${a.tl}</span>
+      <span class="b-domain">${a.domain}</span>
+      ${a.cert?'<span class="b-cert">✓ Certified</span>':''}
+      <span class="b-q ${a.qc}"><span class="b-dot"></span>${a.q}%</span>
+      ${a.pii?'<span class="b-pii">⚠ Contains PII</span>':''}
+    </div>
+    <div class="rc-name">${a.name}</div>
+    <div class="rc-meta">${ratingInline(a)} · ${a.source} · ${a.updated}</div>
+    <div class="rc-desc">${a.desc}</div>
+    <div class="ai-note"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#049B98" stroke-width="2" style="flex-shrink:0;margin-top:1px"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg><div class="tx"><b>Why this:</b> ${a.why}</div></div>
+    <div class="rc-actions">
+      <button class="btn btn-pri" id="add-${a.id}" onclick="addToBasket('${a.id}')">Add to basket</button>
+      <button class="btn btn-out" onclick="openAsset('${a.id}')">View details</button>
+    </div>
+  </div>`;
+}
+
+/* ============ BASKET ============ */
+function addToBasket(id){
+  if(!basket.includes(id))basket.push(id);
+  updateBasketBadges();refreshButtons();
+}
+function removeFromBasket(id){basket=basket.filter(x=>x!==id);updateBasketBadges();renderBasket();}
+function updateBasketBadges(){
+  const n=basket.length;
+  ['sb-basket-count','tb-basket-badge'].forEach(idr=>{const el=document.getElementById(idr);el.textContent=n;el.style.display=n?'':'none';});
+}
+function refreshButtons(){
+  basket.forEach(id=>{const b=document.getElementById('add-'+id);if(b){b.textContent='✓ In basket';b.classList.add('added');b.onclick=()=>go('basket');}});
+}
+let selectedDest=null;
+function renderBasket(){
+  const w=document.getElementById('basketWrap');
+  if(basket.length===0){
+    w.innerHTML=`<div class="empty-basket"><div class="ic">🧺</div><div style="font-size:16px;font-weight:700;color:var(--text);margin-bottom:6px">Your data basket is empty</div><p style="font-size:13px;max-width:360px;margin:0 auto 16px">Add data products from discovery, then request access and delivery for the whole set in one governed step.</p><button class="btn btn-pri" onclick="go('home')">Browse the marketplace</button></div>`;
+    return;
+  }
+  const hasPii=basket.some(id=>ASSETS[id].pii);
+  let items=basket.map(id=>{const a=ASSETS[id];return `<div class="bk-item"><span class="badge b-${a.type}">${a.tl}</span><div><div class="bk-name">${a.name}</div><div class="bk-meta">${a.domain} · quality ${a.q}% ${a.cert?'· certified':''} ${a.pii?'· <span style="color:var(--red)">PII</span>':''}</div></div><button class="x" onclick="removeFromBasket('${a.id}')">×</button></div>`;}).join('');
+  const dests=[['warehouse','🏢','Snowflake warehouse'],['notebook','📓','Connected notebook'],['bi','📈','BI / dashboard'],['agent','🤖','AI agent over MCP']];
+  w.innerHTML=`
+    <h2>Data basket</h2>
+    <div class="sub">${basket.length} product${basket.length>1?'s':''} for one use case. Request access and delivery together — governance is applied per product.</div>
+    ${items}
+    <div class="gov">
+      <h4><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#03787a" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> Governance check</h4>
+      <div class="gov-row"><span class="gi">✓</span><div>Each delivery is bound to the product's <b>data contract</b> — stable schema, freshness SLA, and ownership.</div></div>
+      <div class="gov-row"><span class="gi">${hasPii?'⚠':'✓'}</span><div>${hasPii?'One product contains <b>PII</b>. That request auto-routes through the <b>Actian Implementation Security Point</b>; you will acknowledge the PII handling policy. Non-PII products in this basket auto-approve under policy.':'No PII detected. All products auto-approve under your domain policy.'}</div></div>
+      <div class="gov-row"><span class="gi">✓</span><div>Every step is logged for <b>audit</b>: who, why, classification, contract granted.</div></div>
+    </div>
+    <div class="deliver">
+      <h4>Deliver to</h4>
+      <div class="dest-grid">${dests.map(d=>`<div class="dest" id="dest-${d[0]}" onclick="pickDest('${d[0]}')"><span class="di">${d[1]}</span>${d[2]}</div>`).join('')}</div>
+    </div>
+    <div class="checkout-row">
+      <button class="btn btn-pri" style="padding:11px 22px" onclick="checkout(${hasPii})">${hasPii?'Request access &amp; deliver':'Get data &amp; deliver'}</button>
+      <span style="font-size:12px;color:var(--text-2)" id="destNote">Pick a destination above</span>
+    </div>
+    <div id="checkoutResult"></div>`;
+  selectedDest=null;
+}
+function pickDest(d){selectedDest=d;document.querySelectorAll('.dest').forEach(e=>e.classList.remove('sel'));document.getElementById('dest-'+d).classList.add('sel');document.getElementById('destNote').textContent='Destination set';}
+function checkout(hasPii){
+  if(!selectedDest){document.getElementById('destNote').textContent='⚠ Choose a destination first';document.getElementById('destNote').style.color='var(--red)';return;}
+  const destName={warehouse:'Snowflake warehouse',notebook:'connected notebook',bi:'BI workspace',agent:'AI agent (MCP)'}[selectedDest];
+  document.getElementById('checkoutResult').innerHTML=`
+    <div class="published fade" style="margin-top:18px;text-align:left;padding:20px 22px">
+      <div style="display:flex;gap:12px;align-items:flex-start">
+        <div style="font-size:26px">✓</div>
+        <div>
+          <h3 style="margin-bottom:6px">${hasPii?'Request submitted — delivery on approval':'Delivered to your '+destName}</h3>
+          <p style="margin-bottom:6px">${hasPii?'Non-PII products are provisioning now to your '+destName+'. The PII product is with the Customer Data domain owner; you acknowledged the PII handling policy. Typical turnaround 1–3 business days.':'All products are provisioned to your '+destName+', each bound to its data contract. You can start querying now.'}</p>
+          <p style="font-size:12px;color:var(--text-2)">Usage from this delivery flows back as a trust signal that improves ranking and tells producers what to invest in.</p>
+        </div>
+      </div>
+    </div>`;
+}
+
+/* ============ DETAIL DRAWER ============ */
+function openAsset(id){
+  const a=ASSETS[id];if(!a)return;
+  document.getElementById('dhRow').innerHTML=`<span class="badge b-${a.type}">${a.tl}</span><span class="b-domain">${a.domain}</span>${a.cert?'<span class="b-cert">✓ Certified</span>':''}<span class="b-q ${a.qc}"><span class="b-dot"></span>${a.q}%</span>${a.pii?'<span class="b-pii">⚠ PII</span>':''}<button class="dh-close" onclick="closeDrawer()">×</button>`;
+  document.getElementById('dhName').textContent=a.name;
+  document.getElementById('dhSub').textContent=a.source+' · '+a.updated;
+  document.getElementById('dbBody').innerHTML=`
+    <div class="db-ai"><div class="lb"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>AI summary</div><div class="bd">${a.ai}</div></div>
+    <div class="db-sec"><div class="db-st">Data contract</div><div class="contract"><div class="ct"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#03787a" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Bound to this product (ODCS v3)</div>${a.contract.map(c=>`<div class="cr"><span style="width:120px;color:var(--text-2)">${c[0]}</span><b>${c[1]}</b></div>`).join('')}</div></div>
+    <div class="db-sec"><div class="db-st">Quality</div>${a.qd.map(d=>`<div class="qbar"><div class="qbl"><span class="qbn">${d[0]}</span><span class="qbv">${d[1]}%</span></div><div class="qbt"><div class="qbf ${d[2]}" style="width:${d[1]}%"></div></div></div>`).join('')}</div>
+    ${ratingsSection(a)}`;
+  document.getElementById('dbActions').innerHTML=`<button class="btn btn-pri" style="flex:1" id="add-${a.id}" onclick="addToBasket('${a.id}')">Add to basket</button><button class="btn btn-ghost" onclick="closeDrawer()">Close</button>`;
+  refreshButtons();
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('drawer').classList.add('open');
+}
+function closeDrawer(){document.getElementById('overlay').classList.remove('on');document.getElementById('drawer').classList.remove('open');}
+
+/* ============ STEWARD REQUEST FLOW (clean handoff) ============ */
+let stwStep=0;
+function startSteward(){
+  go('steward');setBc('Request a data product');stwStep=0;renderSteward();
+}
+let clvRequested=false;
+function submitRequest(){
+  stwStep=1;
+  if(!clvRequested){
+    clvRequested=true;
+    REQUESTS.unshift({id:'DP-2047',name:'Customer Lifetime Value by Segment',domain:'Customer Analytics',when:'Submitted just now',status:'waiting',
+      note:'With the Data Steward Agent — drafting candidate sources, output schema and the data contract. A human steward will review before publishing.'});
+    const c=document.getElementById('reqCount');if(c)c.textContent=String((parseInt(c.textContent,10)||0)+1);
+  }
+  renderSteward();
+  document.querySelector('.content').scrollTop=0;
+}
+function renderSteward(){
+  const steps=['Describe your need','Request sent'];
+  const stepper=`<div class="stepper">${steps.map((s,i)=>`<div class="stp ${i<stwStep?'done':''} ${i===stwStep?'active':''}"><div class="dot">${i<stwStep?'✓':i+1}</div><div class="lab">${s}</div><div class="line"></div></div>`).join('')}</div>`;
+  let body='';
+  if(stwStep===0){
+    body+=`<div class="bubble user fade"><div class="who">You · request</div><p>I need <b>customer lifetime value by segment, monthly</b>. Total revenue to date per customer, rolled up by customer segment, refreshed monthly. I'll use it for a board deck on retention.</p></div>`;
+    body+=`<div class="prop fade"><div class="pt">We'll send this to the Steward Agent</div>
+      <div class="qrule"><span class="ck">•</span>&nbsp;<b>What:</b>&nbsp;Customer lifetime value by segment</div>
+      <div class="qrule"><span class="ck">•</span>&nbsp;<b>Grain:</b>&nbsp;Monthly, by customer segment</div>
+      <div class="qrule"><span class="ck">•</span>&nbsp;<b>Intended use:</b>&nbsp;Board deck on retention</div>
+      <div class="qrule"><span class="ck">•</span>&nbsp;<b>Sensitivity:</b>&nbsp;Aggregated — no PII expected</div>
+      </div>`;
+    body+=`<div class="step-actions"><button class="btn btn-pri" style="padding:9px 18px" onclick="submitRequest()">Submit request to the Steward Agent</button><button class="btn btn-ghost" onclick="go('home')">Cancel</button></div>`;
+  }
+  if(stwStep>=1){
+    body+=`<div class="confirm fade">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h3>Data product requested</h3>
+      <p class="lead">Your request for <b>Customer Lifetime Value by Segment</b> has been sent to the <b>Data Steward Agent</b> in the Data Intelligence Platform. A human steward will create the product there and publish it to the marketplace.</p>
+      <div class="req-meta">
+        <div class="cell"><div class="k">Request</div><div class="v">#DP-2047</div></div>
+        <div class="cell"><div class="k">Status</div><div class="v"><span class="pill"><span class="b-dot"></span>With Steward Agent</span></div></div>
+        <div class="cell"><div class="k">Routed to</div><div class="v">Customer Analytics domain</div></div>
+        <div class="cell"><div class="k">Requested by</div><div class="v">You · just now</div></div>
+      </div>
+      <div class="next-title">What happens next, in the platform</div>
+      <div class="next">
+        <div class="next-step now"><div class="ns-rail"></div><div class="ns-ic" style="color:#fff">✦</div><div class="ns-body"><div class="ns-h">Steward Agent drafts the product <span class="ns-now">In progress</span></div><div class="ns-p">Assembles candidate sources, output schema, a data contract and quality rules from the knowledge graph.</div></div></div>
+        <div class="next-step future"><div class="ns-rail"></div><div class="ns-ic">👤</div><div class="ns-body"><div class="ns-h">A human steward reviews &amp; approves</div><div class="ns-p">Plan Mode keeps a person in control — nothing publishes without the domain owner's sign-off.</div></div></div>
+        <div class="next-step future"><div class="ns-ic">🎉</div><div class="ns-body"><div class="ns-h">Published to the marketplace</div><div class="ns-p">Governed, contracted and discoverable for everyone. You'll be notified when it goes live.</div></div></div>
+      </div>
+      <div class="step-actions" style="justify-content:center;margin-top:20px">
+        <button class="btn btn-pri" style="padding:10px 20px" onclick="go('home')">Back to the marketplace</button>
+        <button class="btn btn-ghost" onclick="go('requests')">Track in My requests</button>
+      </div>
+    </div>`;
+  }
+  document.getElementById('stewardWrap').innerHTML=`
+    <div class="stw-head">
+      <div class="stw-avatar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></div>
+      <div><div class="stw-title">Request a data product</div><div class="stw-sub">Describe what you need in plain language. We send it to the Data Steward Agent, and a human steward builds and publishes it.</div><div class="plan-badge">● A human steward reviews &amp; approves before anything publishes</div></div>
+    </div>
+    ${stepper}
+    ${body}`;
+}
+
+/* ============ MY REQUESTS ============ */
+let REQUESTS=[
+  {id:'DP-2041',name:'Cupra Born Sales — Europe',domain:'Sales & Revenue',when:'Approved 2 days ago',status:'approved',open:'cupra',
+    note:'Built and certified by the Steward Agent, approved by the domain owner and published. Daily granularity by country and dealer; no PII.'},
+  {id:'DP-2036',name:'Weekly Marketing Campaign Performance',domain:'Marketing',when:'Submitted 3 days ago',status:'waiting',
+    note:'With the Marketing domain owner for contract review. The agent has drafted the schema and quality rules; awaiting sign-off.'},
+  {id:'DP-2029',name:'Customer contact list with raw names & emails',domain:'Customer Analytics',when:'Declined 5 days ago',status:'declined',reason:'POL-PII-04 · Direct PII, no lawful basis',
+    note:'Declined by the domain owner — direct PII with no lawful basis for the stated marketing use. <b>Suggested alternative:</b> the masked Active Humans product, which is segment-level and carries no PII.'}
+];
+function renderRequests(){
+  const labels={approved:'Approved',waiting:'Waiting',declined:'Declined'};
+  const icons={approved:'✓',waiting:'…',declined:'✕'};
+  const counts={approved:0,waiting:0,declined:0};
+  REQUESTS.forEach(r=>{counts[r.status]=(counts[r.status]||0)+1;});
+  const rows=REQUESTS.map(r=>`
+    <div class="req-row">
+      <div class="req-ic ${r.status}">${icons[r.status]}</div>
+      <div class="req-main">
+        <div class="req-top"><span class="req-name">${r.name}</span><span class="st ${r.status}"><span class="d"></span>${labels[r.status]}</span></div>
+        <div class="req-sub">${r.id} · ${r.domain} · ${r.when}</div>
+        ${r.reason?`<div><span class="req-reason"><svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>${r.reason}</span></div>`:''}
+        <div class="req-note">${r.note}</div>
+        ${r.status==='approved'&&r.open?`<button class="btn btn-out" style="margin-top:11px;padding:6px 13px" onclick="openAsset('${r.open}')">Open product</button>`:''}
+        ${r.status==='declined'?`<button class="btn btn-ghost" style="margin-top:11px;padding:6px 13px" onclick="startSearch('masked customer contact data, segment level, no raw PII')">Find a compliant alternative</button>`:''}
+      </div>
+    </div>`).join('');
+  document.getElementById('reqWrap').innerHTML=`
+    <div class="req-head">
+      <h2 class="req-h">My requests</h2>
+      <p class="req-hsub">Data products you've asked the Steward Agent to build. Each request is drafted by the agent and approved by a human steward before it publishes to the marketplace.</p>
+      <div class="req-stat">
+        <span class="st approved"><span class="d"></span>${counts.approved} approved</span>
+        <span class="st waiting"><span class="d"></span>${counts.waiting} waiting</span>
+        <span class="st declined"><span class="d"></span>${counts.declined} declined</span>
+      </div>
+    </div>
+    ${rows}`;
+}
+
+/* ============ MCP MODAL (agent as consumer) ============ */
+function openMcp(){
+  setBc('Ask AI (MCP)');
+  document.getElementById('mcpOverlay').classList.add('on');
+  const body=document.getElementById('mcpBody');
+  body.innerHTML='';
+  const seq=[
+    {t:'user',h:'Analyst in Claude',c:'Which dataset should I trust for "active customers" in Q1, and can I use it?'},
+    {t:'tool',c:`<span class="fn">semantic_search_glossary</span>("active customer") → <span class="ok">match: active_user (Legal-reviewed)</span>`},
+    {t:'tool',c:`<span class="fn">get_glossary_implementations</span>("active_user") → <span class="ok">Active Humans (certified)</span>`},
+    {t:'tool',c:`<span class="fn">get_dataset_data_model</span>("Active Humans") → <span class="ok">contract v2.0 · no PII · 30-min refresh</span>`},
+    {t:'ans',c:'Use <b>Active Humans</b> — it is the certified product that implements the Legal-reviewed definition of <b>active_user</b> (at least one meaningful interaction in 30 days). It carries no PII and refreshes every 30 minutes. You have access under your domain policy, so you can query it now. Want me to file a governed access request if you need the raw upstream too?'}
+  ];
+  let i=0;
+  function step(){
+    if(i>=seq.length)return;
+    const m=seq[i];const div=document.createElement('div');div.className='mcp-msg fade';
+    if(m.t==='user')div.innerHTML=`<div class="role">${m.h}</div><div class="mcp-user">${m.c}</div>`;
+    if(m.t==='tool')div.innerHTML=`<div class="mcp-tool">${m.c}</div>`;
+    if(m.t==='ans')div.innerHTML=`<div class="role">Claude · grounded in Actian metadata</div><div class="mcp-ans">${m.c}</div>`;
+    body.appendChild(div);body.scrollTop=body.scrollHeight;i++;setTimeout(step,m.t==='ans'?0:520);
+  }
+  step();
+}
+function closeMcp(){document.getElementById('mcpOverlay').classList.remove('on');setBc(document.getElementById('view-discovery').classList.contains('on')?lastQuery:'');}
+</script>
+</body>
+</html>

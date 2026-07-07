@@ -1,0 +1,1849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Actian — Ontology</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ─── ACTIAN DS TOKENS ─── */
+:root {
+  /* Theme: Studio */
+  --primary:          #0283BE;
+  --primary-dark:     #016A9A;
+  --primary-light:    #E5F4FB;
+  --primary-hover:    #027AAF;
+
+  /* Text */
+  --text-primary:     #000000;
+  --text-secondary:   #3F3F4A;
+  --text-tertiary:    #595968;
+  --text-disabled:    #9090A0;
+
+  /* Backgrounds */
+  --bg-default:       #FFFFFF;
+  --bg-grey-1:        #FBFBFF;
+  --bg-grey-2:        #F5F5FA;
+
+  /* Borders */
+  --border-default:   #EBEBF2;
+  --border-strong:    #DDDDE5;
+
+  /* Status */
+  --success:          #047800;
+  --success-bg:       #E6F5E6;
+  --warning:          #D27B00;
+  --warning-bg:       #FFF3E0;
+  --error:            #C12C11;
+  --error-bg:         #FDECEA;
+  --info:             #0F5FDC;
+  --info-bg:          #EBF2FF;
+  --purple:           #6B3FA0;
+  --purple-bg:        #F3EEFF;
+
+  /* Sidebar (dark) */
+  --sb-bg:            #0E1117;
+  --sb-text:          #C9D1D9;
+  --sb-muted:         #6B7280;
+  --sb-hover:         rgba(255,255,255,0.05);
+  --sb-active:        rgba(2,131,190,0.15);
+  --sb-border:        rgba(255,255,255,0.07);
+
+  /* Shadows */
+  --shadow-sm:        0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:        0 2px 8px rgba(0,0,0,0.10);
+  --shadow-lg:        0 8px 24px rgba(0,0,0,0.12);
+
+  /* Radius (DS tokens) */
+  --radius-xs:        2px;
+  --radius-sm:        4px;
+  --radius-md:        6px;
+  --radius-lg:        8px;
+  --radius-xl:        12px;
+  --radius-round:     9999px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body { font-family: 'Roboto', sans-serif; color: var(--text-primary); background: var(--bg-grey-2); font-size: 14px; }
+
+/* ─── SHELL ─── */
+.shell { display: flex; height: 100vh; }
+
+/* ─── SIDEBAR ─── */
+.sidebar {
+  width: 248px; flex-shrink: 0;
+  background: var(--sb-bg);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+.sb-head {
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid var(--sb-border);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.sb-logo-wrap { display: flex; flex-direction: column; gap: 4px; }
+.sb-module {
+  font-size: 9px; color: var(--primary); opacity: 0.85;
+  letter-spacing: 1.2px; text-transform: uppercase; font-weight: 600;
+}
+.sb-new {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: var(--primary); border: none; border-radius: var(--radius-md);
+  color: white; font-size: 12px; font-weight: 500; padding: 6px 12px;
+  cursor: pointer; transition: background 0.15s; white-space: nowrap;
+  font-family: 'Roboto', sans-serif;
+}
+.sb-new:hover { background: var(--primary-dark); }
+
+.sb-search { padding: 10px 12px; border-bottom: 1px solid var(--sb-border); flex-shrink: 0; }
+.sb-search input {
+  width: 100%; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.10);
+  border-radius: var(--radius-md); padding: 7px 10px; font-size: 12px;
+  color: var(--sb-text); outline: none; transition: border-color 0.15s;
+  font-family: 'Roboto', sans-serif;
+}
+.sb-search input::placeholder { color: var(--sb-muted); }
+.sb-search input:focus { border-color: var(--primary); }
+
+.sb-body { flex: 1; overflow-y: auto; padding: 6px 0 8px; }
+.sb-body::-webkit-scrollbar { width: 3px; }
+.sb-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+
+.sb-sec { padding: 14px 14px 4px; }
+.sb-sec-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.9px;
+  text-transform: uppercase; color: var(--sb-muted);
+}
+
+.sb-nav-item {
+  padding: 7px 12px; margin: 1px 6px; border-radius: var(--radius-md); cursor: pointer;
+  display: flex; align-items: center; gap: 8px;
+  transition: background 0.12s; border: none; background: none;
+  width: calc(100% - 12px); text-align: left;
+}
+.sb-nav-item:hover { background: var(--sb-hover); }
+.sb-nav-item.active {
+  background: var(--sb-active);
+  border-left: 2px solid var(--primary); padding-left: 10px;
+}
+.sb-nav-icon { width: 15px; height: 15px; color: var(--sb-muted); flex-shrink: 0; }
+.sb-nav-item.active .sb-nav-icon { color: var(--primary); }
+.sb-nav-label { font-size: 12px; color: var(--sb-text); font-family: 'Roboto', sans-serif; }
+.sb-nav-item.active .sb-nav-label { color: var(--primary); font-weight: 500; }
+.sb-nav-count {
+  margin-left: auto; font-size: 10px; color: var(--sb-muted);
+  background: rgba(255,255,255,0.07); padding: 1px 6px;
+  border-radius: var(--radius-round);
+}
+.sb-nav-count.alert { background: var(--error); color: white; }
+
+.sb-foot {
+  padding: 11px 14px; border-top: 1px solid var(--sb-border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.sb-avatar {
+  width: 28px; height: 28px; background: #E07B39; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 600; flex-shrink: 0;
+}
+.sb-uname { font-size: 12px; color: var(--sb-text); }
+.sb-role { font-size: 10px; color: var(--sb-muted); }
+
+/* ─── MAIN ─── */
+.main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+.topbar {
+  height: 52px; background: var(--bg-default); border-bottom: 1px solid var(--border-default);
+  padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.breadcrumb { font-size: 13px; color: var(--text-tertiary); display: flex; align-items: center; gap: 6px; }
+.bc-link { cursor: pointer; transition: color 0.12s; }
+.bc-link:hover { color: var(--primary); }
+.bc-sep { opacity: 0.4; }
+.bc-cur { color: var(--text-primary); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 8px; }
+
+.screen-badge {
+  font-size: 11px; background: var(--primary-light); color: var(--primary);
+  padding: 4px 10px; border-radius: var(--radius-round); font-weight: 500;
+}
+.tb-avatar {
+  width: 30px; height: 30px; background: #E07B39; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 11px; font-weight: 600;
+}
+
+.content { flex: 1; overflow-y: auto; padding: 24px; }
+
+/* ─── BUTTONS ─── */
+.btn {
+  display: inline-flex; align-items: center; gap: 6px; padding: 7px 16px;
+  border-radius: var(--radius-md); font-size: 13px; font-weight: 500;
+  cursor: pointer; border: none; transition: all 0.15s; white-space: nowrap;
+  font-family: 'Roboto', sans-serif; line-height: 1;
+}
+.btn-primary { background: var(--primary); color: white; }
+.btn-primary:hover { background: var(--primary-dark); }
+.btn-secondary {
+  background: var(--bg-default); color: var(--text-secondary);
+  border: 1px solid var(--border-strong);
+}
+.btn-secondary:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+.btn-ghost { background: transparent; color: var(--primary); border: none; }
+.btn-ghost:hover { background: var(--primary-light); }
+.btn-danger { background: var(--error); color: white; }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+
+/* ─── TAGS ─── */
+.tag {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 8px; border-radius: var(--radius-round);
+  font-size: 11px; font-weight: 500; line-height: 1.6;
+}
+.tag-default  { background: var(--bg-grey-2); color: var(--text-secondary); }
+.tag-primary  { background: var(--primary-light); color: var(--primary); }
+.tag-green    { background: var(--success-bg); color: var(--success); }
+.tag-amber    { background: var(--warning-bg); color: var(--warning); }
+.tag-red      { background: var(--error-bg); color: var(--error); }
+.tag-purple   { background: var(--purple-bg); color: var(--purple); }
+.tag-info     { background: var(--info-bg); color: var(--info); }
+
+/* ─── CARDS ─── */
+.card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 20px; box-shadow: var(--shadow-sm);
+}
+
+/* ─── SEARCH BAR ─── */
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--bg-default); border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); padding: 8px 12px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.search-bar:focus-within {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2,131,190,0.12);
+}
+.search-bar input {
+  border: none; outline: none; font-size: 13px; color: var(--text-primary);
+  flex: 1; background: transparent; font-family: 'Roboto', sans-serif;
+}
+.search-bar svg { width: 14px; height: 14px; color: var(--text-tertiary); flex-shrink: 0; }
+
+/* ─── TABS ─── */
+.tabs { display: flex; border-bottom: 1px solid var(--border-default); }
+.tab {
+  padding: 10px 16px; font-size: 13px; font-weight: 400; cursor: pointer;
+  color: var(--text-tertiary); border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: all 0.15s; background: none;
+  border-top: none; border-left: none; border-right: none;
+  font-family: 'Roboto', sans-serif;
+}
+.tab:hover { color: var(--text-primary); }
+.tab.active { color: var(--primary); border-bottom-color: var(--primary); font-weight: 500; }
+.tab-count {
+  display: inline-block; background: var(--bg-grey-2); color: var(--text-tertiary);
+  border-radius: var(--radius-round); font-size: 10px; font-weight: 600;
+  padding: 0 5px; margin-left: 4px;
+}
+.tab.active .tab-count { background: var(--primary-light); color: var(--primary); }
+
+/* ─── FORM ELEMENTS ─── */
+.form-group { margin-bottom: 18px; }
+.form-label {
+  font-size: 12px; font-weight: 500; color: var(--text-secondary);
+  margin-bottom: 5px; display: block;
+}
+.form-label .req { color: var(--error); }
+.form-input {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); font-size: 13px; outline: none;
+  color: var(--text-primary); transition: border-color 0.15s, box-shadow 0.15s;
+  background: var(--bg-default); font-family: 'Roboto', sans-serif;
+}
+.form-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2,131,190,0.12);
+}
+.form-input.readonly { background: var(--bg-grey-2); color: var(--text-tertiary); }
+.form-select {
+  width: 100%; padding: 8px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); font-size: 13px; outline: none;
+  background: var(--bg-default); color: var(--text-primary); cursor: pointer;
+  font-family: 'Roboto', sans-serif;
+}
+.form-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 4px; }
+
+/* ─── SCREENS ─── */
+.screen { display: none; flex-direction: column; height: 100%; }
+.screen.active { display: flex; }
+
+/* ═══ SCREEN 1 — CONCEPT BROWSER ═══ */
+.browser-toolbar {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.view-toggle {
+  display: flex; border: 1px solid var(--border-strong); border-radius: var(--radius-md); overflow: hidden;
+}
+.view-btn {
+  padding: 6px 10px; border: none; background: var(--bg-default); cursor: pointer;
+  color: var(--text-tertiary); transition: all 0.15s; display: flex; align-items: center; font-size: 14px;
+}
+.view-btn.active { background: var(--primary-light); color: var(--primary); }
+.view-btn + .view-btn { border-left: 1px solid var(--border-strong); }
+
+.select-sm {
+  padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  font-size: 12px; background: var(--bg-default); color: var(--text-primary);
+  outline: none; cursor: pointer; font-family: 'Roboto', sans-serif;
+}
+
+/* Alert banner */
+.alert-bar {
+  background: var(--warning-bg); border: 1px solid #F5C167;
+  border-radius: var(--radius-lg); padding: 11px 16px; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 10px; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.alert-bar:hover { border-color: var(--warning); }
+.alert-bar-text { flex: 1; font-size: 13px; color: #7A4500; }
+.alert-bar-text strong { font-weight: 600; }
+
+/* Entity cards */
+.entity-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.entity-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 16px; cursor: pointer;
+  transition: all 0.15s; box-shadow: var(--shadow-sm); position: relative;
+}
+.entity-card:hover {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2,131,190,0.10), var(--shadow-sm);
+}
+.entity-card.has-conflict { border-color: #F5C167; }
+.entity-card-head { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+.entity-icon {
+  width: 34px; height: 34px; border-radius: var(--radius-lg); display: flex;
+  align-items: center; justify-content: center; flex-shrink: 0; font-size: 16px;
+}
+.entity-icon.blue   { background: var(--primary-light); }
+.entity-icon.green  { background: var(--success-bg); }
+.entity-icon.amber  { background: var(--warning-bg); }
+.entity-icon.purple { background: var(--purple-bg); }
+.entity-name { font-size: 14px; font-weight: 500; margin-bottom: 2px; color: var(--text-primary); }
+.entity-domain { font-size: 11px; color: var(--text-tertiary); }
+.entity-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 12px; }
+.entity-foot { display: flex; align-items: center; justify-content: space-between; }
+.entity-attrs { font-size: 11px; color: var(--text-tertiary); }
+.conflict-chip {
+  position: absolute; top: 10px; right: 10px;
+  background: var(--warning-bg); color: var(--warning);
+  border-radius: var(--radius-round); font-size: 10px; font-weight: 600; padding: 2px 7px;
+}
+.add-card {
+  background: var(--bg-grey-1); border: 1.5px dashed var(--border-strong);
+  border-radius: var(--radius-lg); padding: 16px; cursor: pointer;
+  transition: all 0.15s; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; min-height: 148px; gap: 6px;
+}
+.add-card:hover { border-color: var(--primary); background: var(--primary-light); }
+.add-card-icon { font-size: 24px; color: var(--text-tertiary); }
+.add-card-label { font-size: 13px; font-weight: 500; color: var(--text-secondary); }
+.add-card-sub { font-size: 11px; color: var(--text-tertiary); }
+
+/* Graph */
+.graph-wrap {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); box-shadow: var(--shadow-sm);
+  overflow: hidden; position: relative;
+}
+.graph-hint { font-size: 11px; color: var(--text-tertiary); margin-top: 8px; }
+.graph-legend {
+  position: absolute; bottom: 14px; left: 16px;
+  display: flex; gap: 14px; font-size: 11px; color: var(--text-tertiary);
+}
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+.legend-dash { width: 14px; height: 0; border-top: 2px dashed var(--info); display: inline-block; margin-right: 4px; vertical-align: middle; }
+
+/* ═══ SCREEN 2 — DETAIL ═══ */
+.detail-header {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 20px 24px; margin-bottom: 20px;
+  box-shadow: var(--shadow-sm);
+}
+.detail-title-row {
+  display: flex; align-items: center; gap: 10px;
+  margin: 8px 0 10px; flex-wrap: wrap;
+}
+.detail-title { font-size: 22px; font-weight: 600; letter-spacing: -0.01em; color: var(--text-primary); }
+.detail-meta {
+  display: flex; align-items: center; gap: 16px;
+  font-size: 12px; color: var(--text-tertiary); flex-wrap: wrap;
+}
+.detail-layout { display: grid; grid-template-columns: 1fr 260px; gap: 18px; }
+
+.rel-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border-radius: var(--radius-md); border: 1px solid var(--border-default);
+  margin-bottom: 6px; background: var(--bg-default);
+  transition: border-color 0.15s; cursor: pointer;
+}
+.rel-row:hover { border-color: var(--primary); }
+.rel-row.ai-row { border-color: #C4AEE8; background: var(--purple-bg); }
+.rel-row.inferred-row { border-color: #B9D4FA; background: var(--info-bg); flex-wrap: wrap; cursor: default; }
+.rel-type-pill {
+  font-size: 11px; font-weight: 500; color: var(--primary);
+  background: var(--primary-light); padding: 2px 8px;
+  border-radius: var(--radius-round); flex-shrink: 0;
+}
+.rel-type-pill.ai     { background: var(--purple-bg); color: var(--purple); }
+.rel-type-pill.conflict { background: var(--warning-bg); color: var(--warning); }
+.rel-type-pill.inferred { background: var(--info-bg); color: var(--info); }
+.rel-arrow { font-size: 12px; color: var(--text-tertiary); }
+.rel-target { font-weight: 500; font-size: 13px; flex: 1; }
+.rel-source { font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; }
+.rel-source.ai { color: var(--purple); }
+.rel-source.inferred { color: var(--info); }
+.rel-row-full { width: 100%; }
+.rule-caption { font-size: 11px; color: var(--info); opacity: 0.85; width: 100%; margin-top: 2px; padding-left: 2px; }
+.inferred-toggle-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-size: 12px; color: var(--text-secondary); }
+.inferred-toggle-row input { cursor: pointer; }
+.rule-callout {
+  background: var(--info-bg); border: 1px solid #B9D4FA;
+  border-radius: var(--radius-lg); padding: 10px 14px; margin-bottom: 14px;
+  font-size: 11.5px; color: #0B3E96; line-height: 1.55;
+}
+.rule-callout strong { font-weight: 600; }
+
+.asset-row {
+  display: flex; align-items: center; gap: 10px; padding: 9px 12px;
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  margin-bottom: 6px; background: var(--bg-default);
+}
+.asset-icon {
+  width: 28px; height: 28px; background: var(--bg-grey-2); border-radius: var(--radius-md);
+  display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0;
+}
+.asset-name { font-size: 13px; font-weight: 500; flex: 1; color: var(--text-primary); }
+.asset-sub { font-size: 11px; color: var(--text-tertiary); }
+
+.info-panel { display: flex; flex-direction: column; gap: 14px; }
+.info-label {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.06em; color: var(--text-tertiary); margin-bottom: 4px;
+}
+.info-value { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.info-value.green { color: var(--success); display: flex; align-items: center; gap: 4px; }
+.conf-bar { height: 4px; background: var(--border-default); border-radius: 2px; margin-top: 4px; }
+.conf-fill { height: 100%; background: var(--success); border-radius: 2px; }
+.divider { border: none; border-top: 1px solid var(--border-default); }
+.tab-content { padding-top: 18px; }
+.section-title { font-size: 13px; font-weight: 500; color: var(--text-primary); margin-bottom: 10px; }
+.attr-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+
+/* ═══ SCREEN 3 — ADD RELATIONSHIP ═══ */
+.form-layout { display: grid; grid-template-columns: 1fr 310px; gap: 22px; align-items: start; }
+
+.ai-suggest {
+  background: var(--purple-bg); border: 1px solid #C4AEE8;
+  border-radius: var(--radius-lg); padding: 12px 14px; margin-bottom: 18px;
+  display: flex; gap: 10px; align-items: flex-start;
+}
+.ai-suggest-icon { font-size: 18px; flex-shrink: 0; }
+.ai-suggest-body { flex: 1; font-size: 13px; color: #3E1E6B; }
+.ai-suggest-body strong { font-weight: 600; }
+.ai-suggest-actions { display: flex; gap: 7px; margin-top: 8px; }
+
+.rel-type-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.rel-opt {
+  padding: 10px 12px; border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md); cursor: pointer;
+  transition: all 0.15s; background: var(--bg-default);
+}
+.rel-opt:hover { border-color: var(--primary); background: var(--primary-light); }
+.rel-opt.selected { border-color: var(--primary); background: var(--primary-light); }
+.rel-opt-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.rel-opt-desc { font-size: 11px; color: var(--text-tertiary); margin-top: 1px; }
+.rel-opt.selected .rel-opt-desc { color: var(--primary); }
+
+.preview-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 18px;
+  box-shadow: var(--shadow-sm); position: sticky; top: 0;
+}
+.preview-diagram { text-align: center; padding: 16px 0; }
+.preview-node {
+  display: inline-block; padding: 7px 16px; border-radius: var(--radius-md);
+  font-size: 13px; font-weight: 500;
+}
+.preview-node.source { background: var(--primary-light); color: var(--primary); }
+.preview-node.target { background: var(--bg-grey-2); border: 1px solid var(--border-strong); color: var(--text-primary); }
+.preview-connector {
+  display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 4px 0;
+  color: var(--text-tertiary);
+}
+.preview-connector-line { width: 1px; height: 16px; background: var(--border-strong); }
+.preview-connector-label {
+  font-size: 10px; font-weight: 500; background: var(--bg-grey-2);
+  padding: 2px 8px; border-radius: var(--radius-round); color: var(--text-secondary);
+}
+
+/* ═══ SCREEN 4 — CONFLICT ═══ */
+.conflict-banner {
+  background: var(--warning-bg); border: 1px solid #F5C167;
+  border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 18px;
+  display: flex; align-items: flex-start; gap: 12px;
+}
+.conflict-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+.conflict-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm);
+}
+.conflict-card.left  { border-top: 3px solid var(--primary); }
+.conflict-card.right { border-top: 3px solid var(--success); }
+.conflict-domain {
+  font-size: 10px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.07em; margin-bottom: 5px;
+}
+.conflict-domain.blue  { color: var(--primary); }
+.conflict-domain.green { color: var(--success); }
+.conflict-concept { font-size: 18px; font-weight: 600; margin-bottom: 10px; color: var(--text-primary); }
+.conflict-def {
+  font-size: 13px; color: var(--text-secondary); line-height: 1.65;
+  background: var(--bg-grey-1); padding: 10px 12px;
+  border-radius: var(--radius-md); margin-bottom: 10px;
+}
+.conflict-diff {
+  border-left: 3px solid var(--warning); padding: 6px 10px;
+  font-size: 12px; font-weight: 500; color: var(--warning);
+  background: var(--warning-bg); border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  margin-bottom: 10px;
+}
+.impact-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-left: 3px solid var(--error); border-radius: var(--radius-lg);
+  padding: 16px 18px; margin-bottom: 18px; box-shadow: var(--shadow-sm);
+}
+.resolution-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 18px; box-shadow: var(--shadow-sm);
+}
+.res-option {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  cursor: pointer; margin-bottom: 8px; transition: all 0.15s;
+}
+.res-option:hover { border-color: var(--primary); background: var(--primary-light); }
+.res-icon { font-size: 20px; flex-shrink: 0; }
+.res-label { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+.res-desc { font-size: 11px; color: var(--text-tertiary); }
+
+/* ═══ SCREEN 5 — QUEUE ═══ */
+.stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; margin-bottom: 22px; }
+.stat-card {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 14px 16px; box-shadow: var(--shadow-sm);
+}
+.stat-num { font-size: 28px; font-weight: 700; letter-spacing: -0.03em; }
+.stat-num.red    { color: var(--error); }
+.stat-num.amber  { color: var(--warning); }
+.stat-num.purple { color: var(--purple); }
+.stat-num.green  { color: var(--success); }
+.stat-lbl { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+
+.filter-row { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+.filter-pill {
+  padding: 5px 12px; border-radius: var(--radius-round);
+  border: 1px solid var(--border-strong); font-size: 12px; font-weight: 500;
+  cursor: pointer; background: var(--bg-default); color: var(--text-secondary);
+  transition: all 0.15s; font-family: 'Roboto', sans-serif;
+}
+.filter-pill.active { background: var(--primary); color: white; border-color: var(--primary); }
+.filter-pill:hover:not(.active) { border-color: var(--primary); color: var(--primary); }
+
+.q-item {
+  background: var(--bg-default); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); padding: 14px 16px; margin-bottom: 8px;
+  display: flex; gap: 12px; align-items: flex-start;
+  box-shadow: var(--shadow-sm); transition: border-color 0.15s;
+}
+.q-item:hover { border-color: var(--primary); }
+.q-item.conflict-item { border-color: #F5C167; }
+.q-icon {
+  width: 36px; height: 36px; border-radius: var(--radius-lg); display: flex;
+  align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0;
+}
+.q-icon.ai       { background: var(--purple-bg); }
+.q-icon.user     { background: var(--primary-light); }
+.q-icon.conflict { background: var(--warning-bg); }
+.q-body { flex: 1; min-width: 0; }
+.q-title { font-size: 13px; font-weight: 500; margin-bottom: 2px; color: var(--text-primary); }
+.q-meta {
+  font-size: 11px; color: var(--text-tertiary); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.q-evidence {
+  font-size: 12px; color: var(--text-secondary); background: var(--bg-grey-1);
+  padding: 6px 10px; border-radius: var(--radius-md);
+  border-left: 2px solid var(--border-strong); line-height: 1.5;
+}
+.diff-row { display: flex; gap: 7px; margin-top: 7px; }
+.diff-before, .diff-after {
+  flex: 1; padding: 7px 10px; border-radius: var(--radius-md); font-size: 12px; line-height: 1.5;
+}
+.diff-before { background: var(--error-bg); border: 1px solid #F5C0B5; color: #6B1207; }
+.diff-after  { background: var(--success-bg); border: 1px solid #A3D9A3; color: #024302; }
+.diff-lbl { font-size: 10px; font-weight: 600; opacity: 0.6; margin-bottom: 3px; }
+.q-actions { display: flex; flex-direction: column; gap: 5px; flex-shrink: 0; padding-top: 2px; }
+
+/* ─── V3 · AGENT-NATIVE ADDITIONS ─── */
+.sb-nav-count.live { background: rgba(63,191,111,0.20); color: #6FD08C; display:inline-flex; align-items:center; gap:4px; }
+.sb-nav-count.live::before { content:""; width:6px; height:6px; border-radius:50%; background:#3FBF6F; animation:pulse 1.8s infinite; }
+@keyframes pulse { 0%{box-shadow:0 0 0 0 rgba(63,191,111,0.5);} 70%{box-shadow:0 0 0 5px rgba(63,191,111,0);} 100%{box-shadow:0 0 0 0 rgba(63,191,111,0);} }
+.agent-live-dot { width:8px; height:8px; border-radius:50%; background:#3FBF6F; flex-shrink:0; animation:pulse 1.8s infinite; }
+
+.dir-chip { font-size:9px; font-weight:700; letter-spacing:0.06em; padding:2px 6px; border-radius:var(--radius-sm); flex-shrink:0; line-height:1.6; }
+.dir-chip.in  { background:var(--purple-bg); color:var(--purple); }
+.dir-chip.out { background:var(--primary-light); color:var(--primary); }
+
+.agent-strip {
+  display:flex; align-items:center; gap:12px; cursor:pointer;
+  background:linear-gradient(90deg, var(--purple-bg), var(--primary-light));
+  border:1px solid #D9CBF0; border-radius:var(--radius-lg);
+  padding:11px 16px; margin-bottom:16px; transition:border-color 0.15s;
+}
+.agent-strip:hover { border-color:var(--purple); }
+
+.a2a-loop { display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:0; margin:4px 0; }
+.a2a-node { border-radius:var(--radius-lg); padding:16px; text-align:center; }
+.a2a-node.ontology { background:var(--purple-bg); border:1px solid #C4AEE8; }
+.a2a-node.steward  { background:var(--primary-light); border:1px solid #A9D9EF; }
+.a2a-node-icon { font-size:26px; line-height:1; }
+.a2a-node-name { font-size:14px; font-weight:600; margin-top:6px; }
+.a2a-node-role { font-size:11px; color:var(--text-tertiary); margin-top:3px; line-height:1.5; }
+.a2a-arrows { padding:0 18px; display:flex; flex-direction:column; gap:12px; min-width:230px; }
+.a2a-arrow { text-align:center; }
+.a2a-arrow-line { font-size:11px; font-weight:600; padding:5px 12px; border-radius:var(--radius-round); display:inline-block; }
+.a2a-arrow.in  .a2a-arrow-line { background:var(--purple-bg); color:var(--purple); }
+.a2a-arrow.out .a2a-arrow-line { background:var(--primary-light); color:var(--primary); }
+.a2a-arrow-sub { font-size:11px; color:var(--text-tertiary); margin-top:4px; line-height:1.45; }
+.a2a-mcp { text-align:center; font-size:9px; color:var(--text-tertiary); text-transform:uppercase; letter-spacing:0.09em; }
+
+.feed-item { display:flex; gap:12px; align-items:flex-start; padding:12px 2px; border-bottom:1px solid var(--border-default); }
+.feed-item:last-child { border-bottom:none; }
+.feed-time { font-size:11px; color:var(--text-tertiary); white-space:nowrap; }
+.feed-title { font-size:13px; font-weight:500; color:var(--text-primary); margin-bottom:2px; }
+.feed-desc { font-size:12px; color:var(--text-secondary); line-height:1.55; }
+
+.mcp-row { display:flex; align-items:center; gap:10px; padding:9px 12px; border:1px solid var(--border-default); border-radius:var(--radius-md); margin-bottom:6px; }
+.mcp-dot { width:8px; height:8px; border-radius:50%; background:var(--success); flex-shrink:0; }
+
+/* ─── V4 · REVIEW FIXES ─── */
+/* IN = proposal from Steward (blue) · OUT = meaning from Ontology (purple) — color by originating agent */
+.dir-chip.in  { background:var(--primary-light); color:var(--primary); }
+.dir-chip.out { background:var(--purple-bg); color:var(--purple); }
+.ghost-row { padding:8px 12px; border:1px dashed var(--border-strong); border-radius:var(--radius-md); font-size:12px; color:var(--text-tertiary); cursor:pointer; margin-top:6px; text-align:center; }
+.ghost-row:hover { border-color:var(--primary); color:var(--primary); }
+.custom-tag { font-size:9px; color:var(--text-tertiary); border:1px solid var(--border-strong); border-radius:var(--radius-sm); padding:0 4px; margin-left:5px; vertical-align:middle; }
+.hist-row { display:flex; align-items:center; gap:12px; padding:10px 2px; border-bottom:1px solid var(--border-default); }
+.hist-row:last-of-type { border-bottom:none; }
+.hist-dot { width:9px; height:9px; border-radius:50%; flex-shrink:0; }
+.modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4); z-index:100; align-items:center; justify-content:center; }
+.modal { background:#fff; border-radius:var(--radius-lg); width:540px; max-width:92vw; box-shadow:var(--shadow-lg); overflow:hidden; }
+.modal-head { padding:16px 20px; border-bottom:1px solid var(--border-default); font-size:15px; font-weight:600; display:flex; justify-content:space-between; align-items:center; }
+.modal-x { cursor:pointer; color:var(--text-tertiary); font-size:22px; line-height:1; }
+.modal-body { padding:20px; }
+.fmt-opt { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:12px 14px; border:1px solid var(--border-default); border-radius:var(--radius-md); margin-bottom:8px; }
+.fmt-name { font-size:13px; font-weight:500; color:var(--text-primary); }
+.fmt-desc { font-size:11px; color:var(--text-tertiary); margin-top:2px; }
+
+/* ─── GLOBAL CHAT (ONTOLOGY AGENT) — reachable from every screen ─── */
+.chat-fab {
+  position: fixed; bottom: 24px; right: 24px; z-index: 90;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--purple), var(--primary));
+  border: none; color: white; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow-lg); transition: transform 0.15s;
+}
+.chat-fab:hover { transform: scale(1.06); }
+.chat-fab.hidden { display: none; }
+.chat-fab-dot { position: absolute; top: -2px; right: -2px; width: 11px; height: 11px; border-radius: 50%; background: #3FBF6F; border: 2px solid var(--bg-default); }
+
+.chat-panel {
+  position: fixed; top: 0; right: -400px; width: 380px; height: 100vh;
+  background: var(--bg-default); border-left: 1px solid var(--border-default);
+  box-shadow: var(--shadow-lg); z-index: 95;
+  display: flex; flex-direction: column; transition: right 0.22s ease;
+}
+.chat-panel.open { right: 0; }
+.chat-head {
+  padding: 14px 16px; border-bottom: 1px solid var(--border-default);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+  background: linear-gradient(90deg, var(--purple-bg), var(--primary-light));
+}
+.chat-head-icon {
+  width: 32px; height: 32px; border-radius: 50%; background: var(--purple);
+  display: flex; align-items: center; justify-content: center; font-size: 15px; color: white; flex-shrink: 0;
+}
+.chat-head-title { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.chat-head-sub { font-size: 11px; color: var(--text-tertiary); display: flex; align-items: center; gap: 4px; }
+.chat-head-sub .agent-live-dot { width: 6px; height: 6px; }
+.chat-x { margin-left: auto; cursor: pointer; color: var(--text-tertiary); font-size: 20px; line-height: 1; }
+
+.chat-body { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.chat-msg { max-width: 88%; font-size: 13px; line-height: 1.55; padding: 9px 12px; border-radius: var(--radius-lg); }
+.chat-msg.agent { background: var(--purple-bg); color: #3E1E6B; align-self: flex-start; border: 1px solid #E1D4F5; }
+.chat-msg.user  { background: var(--primary); color: white; align-self: flex-end; }
+.chat-msg .chat-link { color: var(--purple); font-weight: 500; cursor: pointer; text-decoration: underline; }
+
+.chat-suggest-row { display: flex; gap: 6px; flex-wrap: wrap; padding: 0 16px 12px; flex-shrink: 0; }
+.chat-suggest-chip {
+  font-size: 11px; padding: 5px 10px; border-radius: var(--radius-round);
+  border: 1px solid var(--border-strong); background: var(--bg-default);
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.chat-suggest-chip:hover { border-color: var(--purple); color: var(--purple); background: var(--purple-bg); }
+
+.chat-input-row {
+  display: flex; align-items: flex-end; gap: 8px; padding: 12px 14px;
+  border-top: 1px solid var(--border-default); flex-shrink: 0;
+}
+.chat-input {
+  flex: 1; border: 1px solid var(--border-strong); border-radius: var(--radius-md);
+  padding: 8px 10px; font-size: 13px; resize: none; outline: none;
+  font-family: 'Roboto', sans-serif; max-height: 90px;
+}
+.chat-input:focus { border-color: var(--purple); box-shadow: 0 0 0 3px rgba(107,63,160,0.12); }
+.chat-send {
+  background: var(--purple); color: white; border: none; border-radius: var(--radius-md);
+  width: 34px; height: 34px; flex-shrink: 0; cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s;
+}
+.chat-send:hover { background: #5A3489; }
+.chat-typing { display: flex; gap: 4px; align-self: flex-start; padding: 9px 12px; background: var(--purple-bg); border-radius: var(--radius-lg); border: 1px solid #E1D4F5; }
+.chat-typing span { width: 5px; height: 5px; border-radius: 50%; background: var(--purple); opacity: 0.5; animation: chatTyping 1.1s infinite; }
+.chat-typing span:nth-child(2) { animation-delay: 0.15s; }
+.chat-typing span:nth-child(3) { animation-delay: 0.3s; }
+@keyframes chatTyping { 0%,80%,100%{opacity:0.3; transform: translateY(0);} 40%{opacity:1; transform: translateY(-2px);} }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ─── SIDEBAR ─── -->
+  <aside class="sidebar">
+    <div class="sb-head">
+      <div class="sb-logo-wrap">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 402.05 81.36" style="display:block;width:124px;height:auto;margin-bottom:5px">
+          <defs><style>.al1{fill:#ffffff;}.al2{fill:rgba(255,255,255,0.65);}.al3{fill:rgba(255,255,255,0.35);}</style></defs>
+          <path class="al1" d="M134.61,17.71a.37.37,0,0,1,.71,0l21.45,43.56a.39.39,0,0,1-.38.62h-8.61a1.23,1.23,0,0,1-1-.62l-2.68-5.52a1.22,1.22,0,0,0-1-.62H126.76a1.23,1.23,0,0,0-1,.62l-2.68,5.52a1.21,1.21,0,0,1-1,.62h-8.55a.4.4,0,0,1-.39-.62Zm5,29.44a.4.4,0,0,0,.39-.63l-4.82-9.9c-.16-.34-.43-.34-.6,0l-4.76,9.9a.41.41,0,0,0,.39.63Z"/>
+          <path class="al1" d="M308.14,17.71a.37.37,0,0,1,.71,0L330.3,61.27a.39.39,0,0,1-.38.62h-8.61a1.23,1.23,0,0,1-1-.62l-2.68-5.52a1.21,1.21,0,0,0-1-.62H300.29a1.2,1.2,0,0,0-1,.62l-2.69,5.52a1.21,1.21,0,0,1-1,.62h-8.55a.4.4,0,0,1-.39-.62Zm5,29.44a.4.4,0,0,0,.39-.63l-4.81-9.9c-.17-.34-.44-.34-.61,0l-4.76,9.9a.41.41,0,0,0,.39.63Z"/>
+          <path class="al1" d="M205.12,54.16a.69.69,0,0,1,0,1l0,0a22.54,22.54,0,0,1-16.73,7.39c-12.61,0-22.85-9.2-22.85-21.87s10.24-21.93,22.85-21.93A22.49,22.49,0,0,1,205,26.09l0,0a.71.71,0,0,1,0,1l0,0-5.32,4.51h0a.71.71,0,0,1-1,0l0,0a14.37,14.37,0,0,0-10.32-4.33,13.19,13.19,0,0,0-13.46,13.41A13.13,13.13,0,0,0,188.37,54a14.39,14.39,0,0,0,10.38-4.37l0,0a.68.68,0,0,1,.93,0l.1.08,5.25,4.45Z"/>
+          <path class="al1" d="M227.27,28.65a.7.7,0,0,0-.69-.7H216.45a.69.69,0,0,1-.69-.69V20.12a.69.69,0,0,1,.69-.69H247.3a.69.69,0,0,1,.69.69v7.14a.69.69,0,0,1-.69.69h-10a.7.7,0,0,0-.69.7V61.2a.7.7,0,0,1-.7.69h-8a.69.69,0,0,1-.7-.69Z"/>
+          <path class="al1" d="M264.62,20.12a.69.69,0,0,1,.69-.69h8a.69.69,0,0,1,.69.69V61.2a.69.69,0,0,1-.69.69h-8a.69.69,0,0,1-.69-.69Z"/>
+          <path class="al1" d="M371.81,20.12a.69.69,0,0,1,.69-.69h7.88a.69.69,0,0,1,.69.69v42c0,.76-.46,1-1,.46L353.59,38.75c-.57-.51-1-.3-1,.46v22a.69.69,0,0,1-.69.69H344a.69.69,0,0,1-.69-.69v-42c0-.77.46-1,1-.46l26.46,23.91c.57.51,1,.31,1-.45Z"/>
+          <path class="al1" d="M85.29,63.53A1.16,1.16,0,0,0,84.4,63h-13a1.16,1.16,0,0,1-.89-.51L48.07,24.34a.32.32,0,0,0-.6,0L25,62.51a1.16,1.16,0,0,1-.89.51h-13a1.17,1.17,0,0,0-.9.51l-3,5.09c-.17.28,0,.51.29.51h20.1a1.16,1.16,0,0,0,.89-.51L47.47,36.41a.32.32,0,0,1,.6,0L67,68.62a1.13,1.13,0,0,0,.89.51H88c.33,0,.46-.23.29-.51Z"/>
+          <path class="al2" d="M95.47,80.85c.17.28,0,.51-.29.51H60.9a1.13,1.13,0,0,1-.89-.51L48.07,60.54a.32.32,0,0,0-.6,0L35.53,80.85a1.13,1.13,0,0,1-.89.51H.36c-.32,0-.45-.23-.29-.51l3-5.1a1.12,1.12,0,0,1,.89-.5H31.15a1.16,1.16,0,0,0,.89-.51L47.47,48.48a.32.32,0,0,1,.6,0L63.51,74.74a1.13,1.13,0,0,0,.89.51H91.59a1.15,1.15,0,0,1,.89.5Z"/>
+          <path class="al2" d="M48.07,72.61a.32.32,0,0,0-.6,0l-4.84,8.24c-.17.28,0,.51.29.51h9.7c.33,0,.46-.23.3-.51Z"/>
+          <path class="al3" d="M47.47.21a.32.32,0,0,1,.6,0l33,56.18c.17.28,0,.51-.29.51H74.89a1.16,1.16,0,0,1-.89-.51L48.07,12.28a.32.32,0,0,0-.6,0L21.54,56.39a1.15,1.15,0,0,1-.89.51H14.74c-.33,0-.46-.23-.29-.51Z"/>
+        </svg>
+        <span class="sb-module">Data Intelligence · Ontology</span>
+      </div>
+      <button class="sb-new" onclick="showScreen('add-rel')">+ New</button>
+    </div>
+
+    <div class="sb-search">
+      <input type="text" placeholder="Search concepts…">
+    </div>
+
+    <div class="sb-body">
+      <div class="sb-sec"><div class="sb-sec-label">Ontology</div></div>
+      <button class="sb-nav-item active" onclick="showScreen('browser')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 3h5v2H2V3zm0 4h5v2H2V7zm0 4h5v2H2v-2zm7-8h5v2H9V3zm0 4h5v2H9V7zm0 4h5v2H9v-2z"/></svg>
+        <span class="sb-nav-label">Concept browser</span>
+      </button>
+      <button class="sb-nav-item" onclick="showScreen('activity')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="4.3" cy="8" r="2.1"/><circle cx="11.7" cy="8" r="2.1"/><path d="M6.4 6.9c1.1-.7 2.6-.7 3.6 0M6.4 9.1c1.1.7 2.6.7 3.6 0"/></svg>
+        <span class="sb-nav-label">Agent activity</span>
+        <span class="sb-nav-count live">live</span>
+      </button>
+      <button class="sb-nav-item" onclick="showScreen('queue')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1a7 7 0 100 14A7 7 0 008 1zm-.5 4h1v4.5l3 1.8-.5.87-3.5-2.1V5z"/></svg>
+        <span class="sb-nav-label">Review queue</span>
+        <span class="sb-nav-count alert">7</span>
+      </button>
+      <button class="sb-nav-item" onclick="showScreen('conflict')">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l6 11H2L8 2z"/><path d="M8 7v3M8 11.4v.2"/></svg>
+        <span class="sb-nav-label">Conflicts</span>
+        <span class="sb-nav-count" style="background:var(--warning);color:#fff">2</span>
+      </button>
+
+      <div class="sb-sec"><div class="sb-sec-label">Catalog</div></div>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="currentColor"><path d="M2 2h12v2H2V2zm0 4h12v2H2V6zm0 4h8v2H2v-2z"/></svg>
+        <span class="sb-nav-label">Datasets</span>
+      </button>
+      <button class="sb-nav-item">
+        <svg class="sb-nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z"/></svg>
+        <span class="sb-nav-label">Lineage</span>
+      </button>
+    </div>
+
+    <div class="sb-foot">
+      <div class="sb-avatar">OV</div>
+      <div>
+        <div class="sb-uname">Ondrej Vesely</div>
+        <div class="sb-role">Staff PM · AI</div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ─── MAIN ─── -->
+  <main class="main">
+
+    <!-- ════════════════════════════════════════
+         SCREEN 1 — CONCEPT BROWSER
+    ═════════════════════════════════════════ -->
+    <div id="screen-browser" class="screen active">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link">Actian</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Ontology</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 1 · Concept browser</span>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="agent-strip" onclick="showScreen('activity')">
+          <span class="agent-live-dot"></span>
+          <div style="flex:1;font-size:13px;color:var(--text-secondary)"><strong style="color:var(--text-primary)">Ontology Agent</strong> and <strong style="color:var(--text-primary)">Data Steward Agent</strong> are keeping this ontology in sync with your data &mdash; 3 new proposals waiting for review. <span style="color:var(--purple);font-weight:500">See agent activity &rarr;</span></div>
+        </div>
+        <div class="browser-toolbar">
+          <div class="search-bar" style="flex:1;max-width:380px">
+            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+            <input type="text" placeholder="Search concepts, entities, attributes…">
+          </div>
+          <select class="select-sm"><option>All domains</option><option>Finance</option><option>Marketing</option><option>Operations</option></select>
+          <select class="select-sm"><option>All types</option><option>Business entity</option><option>Business attribute</option></select>
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="switchView('list')" title="List view">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M2 4h12v1.5H2zm0 4h12v1.5H2zm0 4h8v1.5H2z"/></svg>
+            </button>
+            <button class="view-btn" onclick="switchView('graph')" title="Graph view">
+              <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="2.5"/><circle cx="2.5" cy="4" r="1.5"/><circle cx="13.5" cy="4" r="1.5"/><circle cx="2.5" cy="12" r="1.5"/><circle cx="13.5" cy="12" r="1.5"/><line x1="4" y1="4.8" x2="6" y2="6.8" stroke="currentColor" stroke-width="1"/><line x1="10" y1="6.8" x2="12" y2="4.8" stroke="currentColor" stroke-width="1"/><line x1="4" y1="11.2" x2="6" y2="9.2" stroke="currentColor" stroke-width="1"/><line x1="10" y1="9.2" x2="12" y2="11.2" stroke="currentColor" stroke-width="1"/></svg>
+            </button>
+          </div>
+          <button class="btn btn-secondary btn-sm" style="margin-left:auto" onclick="openModal('modal-import')">↧ Import</button>
+          <button class="btn btn-secondary btn-sm" onclick="openModal('modal-export')">↥ Export</button>
+          <span style="font-size:12px;color:var(--text-tertiary)">42 concepts · 3 domains · <strong style="color:var(--warning)">2 conflicts</strong></span>
+        </div>
+
+        <!-- LIST VIEW -->
+        <div id="view-list">
+          <div class="alert-bar" onclick="showScreen('conflict')">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="none" style="color:var(--warning);flex-shrink:0"><path d="M10 3L18 17H2L10 3z" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v4M10 14.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            <div class="alert-bar-text">
+              <strong>Ontology Agent flagged 2 cross-domain definition conflicts —</strong> Finance and Marketing define "Active Customer" differently · 3 datasets · up to <strong>1.6M-record</strong> impact
+            </div>
+            <button class="btn btn-sm" style="background:var(--warning);color:white;flex-shrink:0">Review conflicts →</button>
+          </div>
+
+          <div class="entity-grid">
+            <div class="entity-card" onclick="showScreen('detail')">
+              <div class="entity-card-head">
+                <div class="entity-icon blue">👤</div>
+                <div>
+                  <div class="entity-name">Customer</div>
+                  <div class="entity-domain">Finance · Business entity</div>
+                </div>
+              </div>
+              <div class="entity-desc">An individual or organisation that has entered into a commercial relationship and holds at least one active account.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">12 attributes · 8 relationships</span>
+                <span class="tag tag-green">Certified</span>
+              </div>
+            </div>
+
+            <div class="entity-card has-conflict" onclick="showScreen('conflict')">
+              <div class="conflict-chip">⚠ Conflict</div>
+              <div class="entity-card-head">
+                <div class="entity-icon amber">⚡</div>
+                <div>
+                  <div class="entity-name">Active Customer</div>
+                  <div class="entity-domain">Finance / Marketing · Entity</div>
+                </div>
+              </div>
+              <div class="entity-desc">Definition differs between Finance (billing-based, 90 days) and Marketing (engagement-based, 60 days).</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">2 definitions · 3 datasets</span>
+                <span class="tag tag-amber">Pending</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon blue">📦</div>
+                <div>
+                  <div class="entity-name">Order</div>
+                  <div class="entity-domain">Operations · Business entity</div>
+                </div>
+              </div>
+              <div class="entity-desc">A confirmed request from a Customer to purchase one or more Products, assigned an order ID at creation.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">9 attributes · 5 relationships</span>
+                <span class="tag tag-green">Certified</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon green">💰</div>
+                <div>
+                  <div class="entity-name">Revenue</div>
+                  <div class="entity-domain">Finance · Business entity</div>
+                </div>
+              </div>
+              <div class="entity-desc">Total recognised income from customer transactions in a given period, net of taxes and inter-company eliminations.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">6 attributes · 4 relationships</span>
+                <span class="tag tag-default">Draft</span>
+              </div>
+            </div>
+
+            <div class="entity-card">
+              <div class="entity-card-head">
+                <div class="entity-icon blue">🏷️</div>
+                <div>
+                  <div class="entity-name">Product</div>
+                  <div class="entity-domain">Operations · Business entity</div>
+                </div>
+              </div>
+              <div class="entity-desc">A good or service offered for sale, identified by a unique SKU with at least one price tier.</div>
+              <div class="entity-foot">
+                <span class="entity-attrs">14 attributes · 6 relationships</span>
+                <span class="tag tag-green">Certified</span>
+              </div>
+            </div>
+
+            <div class="add-card" onclick="showScreen('add-rel')">
+              <div class="add-card-icon">＋</div>
+              <div class="add-card-label">Add new concept</div>
+              <div class="add-card-sub">Entity or attribute</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- GRAPH VIEW -->
+        <div id="view-graph" style="display:none">
+          <div class="graph-wrap" style="height:490px">
+            <svg viewBox="0 0 900 480" style="width:100%;height:100%">
+              <line x1="450" y1="240" x2="200" y2="120" stroke="#DDDDE5" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="700" y2="120" stroke="#DDDDE5" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="200" y2="360" stroke="#DDDDE5" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="700" y2="360" stroke="#DDDDE5" stroke-width="1.5"/>
+              <line x1="450" y1="240" x2="450" y2="90" stroke="#F5C167" stroke-width="2" stroke-dasharray="5,3"/>
+              <path d="M 200 360 Q 280 405 450 240" fill="none" stroke="#0F5FDC" stroke-width="1.5" stroke-dasharray="4,3"/>
+              <text x="310" y="165" font-size="10" fill="#9090A0" text-anchor="middle" font-family="Roboto,sans-serif">places</text>
+              <text x="592" y="165" font-size="10" fill="#9090A0" text-anchor="middle" font-family="Roboto,sans-serif">Calculated from</text>
+              <text x="302" y="315" font-size="10" fill="#9090A0" text-anchor="middle" font-family="Roboto,sans-serif">Broader</text>
+              <text x="594" y="315" font-size="10" fill="#9090A0" text-anchor="middle" font-family="Roboto,sans-serif">has</text>
+              <text x="300" y="392" font-size="9.5" fill="#0F5FDC" text-anchor="middle" font-family="Roboto,sans-serif">Narrower (inferred · inverse rule)</text>
+              <text x="490" y="155" font-size="10" fill="#D27B00" text-anchor="middle" font-family="Roboto,sans-serif">⚠ Conflict</text>
+              <!-- Customer (centre) -->
+              <g onclick="showScreen('detail')" style="cursor:pointer">
+                <circle cx="450" cy="240" r="40" fill="#E5F4FB" stroke="#0283BE" stroke-width="2"/>
+                <text x="450" y="236" font-size="12" font-weight="600" fill="#000000" text-anchor="middle" font-family="Roboto,sans-serif">Customer</text>
+                <text x="450" y="250" font-size="10" fill="#595968" text-anchor="middle" font-family="Roboto,sans-serif">Entity</text>
+              </g>
+              <!-- Order -->
+              <g style="cursor:pointer">
+                <circle cx="200" cy="120" r="32" fill="#E5F4FB" stroke="#0283BE" stroke-width="1.5"/>
+                <text x="200" y="116" font-size="11" font-weight="500" fill="#000000" text-anchor="middle" font-family="Roboto,sans-serif">Order</text>
+                <text x="200" y="129" font-size="10" fill="#595968" text-anchor="middle" font-family="Roboto,sans-serif">Entity</text>
+              </g>
+              <!-- Revenue -->
+              <g style="cursor:pointer">
+                <circle cx="700" cy="120" r="32" fill="#E6F5E6" stroke="#047800" stroke-width="1.5"/>
+                <text x="700" y="116" font-size="11" font-weight="500" fill="#000000" text-anchor="middle" font-family="Roboto,sans-serif">Revenue</text>
+                <text x="700" y="129" font-size="10" fill="#595968" text-anchor="middle" font-family="Roboto,sans-serif">Entity</text>
+              </g>
+              <!-- Active Customer (conflict) -->
+              <g onclick="showScreen('conflict')" style="cursor:pointer">
+                <circle cx="450" cy="90" r="30" fill="#FFF3E0" stroke="#D27B00" stroke-width="2" stroke-dasharray="5,3"/>
+                <text x="450" y="85" font-size="10" font-weight="600" fill="#7A4500" text-anchor="middle" font-family="Roboto,sans-serif">Active</text>
+                <text x="450" y="97" font-size="10" font-weight="600" fill="#7A4500" text-anchor="middle" font-family="Roboto,sans-serif">Customer ⚠</text>
+              </g>
+              <!-- Account -->
+              <g style="cursor:pointer">
+                <circle cx="200" cy="360" r="30" fill="#F3EEFF" stroke="#6B3FA0" stroke-width="1.5"/>
+                <text x="200" y="356" font-size="11" font-weight="500" fill="#000000" text-anchor="middle" font-family="Roboto,sans-serif">Account</text>
+                <text x="200" y="369" font-size="10" fill="#595968" text-anchor="middle" font-family="Roboto,sans-serif">Entity</text>
+              </g>
+              <!-- Product -->
+              <g style="cursor:pointer">
+                <circle cx="700" cy="360" r="30" fill="#E5F4FB" stroke="#0283BE" stroke-width="1.5"/>
+                <text x="700" y="356" font-size="11" font-weight="500" fill="#000000" text-anchor="middle" font-family="Roboto,sans-serif">Product</text>
+                <text x="700" y="369" font-size="10" fill="#595968" text-anchor="middle" font-family="Roboto,sans-serif">Entity</text>
+              </g>
+            </svg>
+            <div class="graph-legend">
+              <span><span class="legend-dot" style="background:#0283BE"></span>Entity</span>
+              <span><span class="legend-dot" style="background:#047800"></span>Certified</span>
+              <span><span class="legend-dot" style="background:#6B3FA0"></span>AI-suggested</span>
+              <span><span class="legend-dot" style="background:#D27B00"></span>Conflict</span>
+              <span><span class="legend-dash"></span>Inferred (rule-based)</span>
+            </div>
+          </div>
+          <p class="graph-hint">Click any node to open the concept. Read-only — edit relationships in the concept detail view.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 2 — CONCEPT DETAIL
+    ═════════════════════════════════════════ -->
+    <div id="screen-detail" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-link">Finance</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Customer</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 2 · Concept detail</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('browser')">← Back</button>
+          <button class="btn btn-primary btn-sm" onclick="showScreen('add-rel')">+ Add relationship</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="detail-header">
+          <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">
+            <span onclick="showScreen('browser')" style="cursor:pointer;color:var(--primary)">Ontology</span> › Finance › Customer
+          </div>
+          <div class="detail-title-row">
+            <span style="font-size:26px">👤</span>
+            <span class="detail-title">Customer</span>
+            <span class="tag tag-green">Certified</span>
+            <span class="tag tag-primary">Business entity</span>
+          </div>
+          <div class="detail-meta">
+            <span>Owner: <strong style="color:var(--text-primary)">Sarah Chen (Finance)</strong></span>
+            <span>Last validated: 14 May 2026</span>
+            <span>Domain: Finance</span>
+          </div>
+        </div>
+
+        <div class="detail-layout">
+          <div>
+            <div class="tabs">
+              <button class="tab active" onclick="switchTab(this,'tab-overview')">Overview</button>
+              <button class="tab" onclick="switchTab(this,'tab-relationships')">Relationships <span class="tab-count">8</span></button>
+              <button class="tab" onclick="switchTab(this,'tab-assets')">Linked assets <span class="tab-count">5</span></button>
+              <button class="tab" onclick="switchTab(this,'tab-lineage')">Lineage</button>
+              <button class="tab" onclick="switchTab(this,'tab-history')">History <span class="tab-count">6</span></button>
+            </div>
+
+            <div id="tab-overview" class="tab-content">
+              <div class="section-title">Definition</div>
+              <p style="font-size:14px;line-height:1.7;color:var(--text-secondary);margin-bottom:18px">An individual or organisation that has entered into a commercial relationship with the company and holds at least one active account. A Customer must have a verified billing address and an associated CustomerID in the CRM system.</p>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:18px">
+                <span class="tag tag-default">EN · Customer</span>
+                <span class="tag tag-default">NB · Kunde</span>
+                <span class="tag tag-default">FR · Client</span>
+                <span class="tag tag-default">DE · Kunde</span>
+              </div>
+              <div class="section-title">Business attributes <span style="font-weight:400;color:var(--text-tertiary)">(12)</span></div>
+              <div class="attr-grid">
+                <div class="asset-row"><div class="asset-icon">🔤</div><div style="flex:1"><div class="asset-name">CustomerID</div><div class="asset-sub">String · linked to crm.customers.cust_id</div></div><span class="tag tag-primary">ID</span></div>
+                <div class="asset-row"><div class="asset-icon">📧</div><div style="flex:1"><div class="asset-name">EmailAddress</div><div class="asset-sub">String · linked to crm.customers.email</div></div><span class="tag tag-amber">PII</span></div>
+                <div class="asset-row"><div class="asset-icon">📅</div><div style="flex:1"><div class="asset-name">CreatedDate</div><div class="asset-sub">DateTime · linked to crm.customers.created_at</div></div></div>
+                <div class="asset-row"><div class="asset-icon">🌍</div><div style="flex:1"><div class="asset-name">BillingCountry</div><div class="asset-sub">String · ISO 3166 · <span style="color:var(--warning)">unmapped</span></div></div><span class="tag tag-default">map →</span></div>
+              </div>
+              <div class="ghost-row" onclick="switchTabById('tab-relationships')">+ 8 more attributes</div>
+            </div>
+
+            <div id="tab-relationships" class="tab-content" style="display:none">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+                <span class="section-title" style="margin:0">All relationships</span>
+                <button class="btn btn-primary btn-sm" style="margin-left:auto" onclick="showScreen('add-rel')">+ Add</button>
+              </div>
+              <div class="rule-callout">Inferred from declared rules — transitivity, symmetry, inverse. This is rule-based, not a full OWL reasoner: three rules are active (Broader/Narrower is transitive, Related is symmetric, inverses auto-create). No semantic inference beyond what's declared.</div>
+              <div class="inferred-toggle-row">
+                <input type="checkbox" id="show-inferred" onchange="toggleInferred(this)">
+                <label for="show-inferred">Show inferred relationships (2) — hidden by default</label>
+              </div>
+              <div class="rel-row"><span class="rel-type-pill">places</span><span class="custom-tag">custom</span><span class="rel-arrow">→</span><span class="rel-target">Order</span><span class="tag tag-default" style="font-size:10px">one-to-many</span><span class="rel-source">Human</span></div>
+              <div class="rel-row" onclick="showScreen('conflict')" style="cursor:pointer"><span class="rel-type-pill">Broader</span><span class="rel-arrow">→</span><span class="rel-target">Active Customer</span><span class="tag tag-amber" style="font-size:10px">⚠ Conflict</span><span class="rel-source" style="color:var(--warning)">Review →</span></div>
+              <div class="rel-row"><span class="rel-type-pill">has</span><span class="custom-tag">custom</span><span class="rel-arrow">→</span><span class="rel-target">Account</span><span class="tag tag-default" style="font-size:10px">one-to-many</span><span class="rel-source">Human</span></div>
+              <div class="rel-row ai-row"><span class="rel-type-pill ai">Related</span><span class="rel-arrow">→</span><span class="rel-target">Prospect</span><span class="tag tag-purple" style="font-size:10px">AI suggested</span><button class="btn btn-sm btn-secondary" onclick="showScreen('queue')">Review</button></div>
+              <div class="rel-row"><span class="rel-type-pill">Calculated from</span><span class="rel-arrow">→</span><span class="rel-target">Revenue</span><span class="tag tag-default" style="font-size:10px">many-to-many</span><span class="rel-source">Human</span></div>
+              <div class="rel-row"><span class="rel-type-pill">Used to calculate</span><span class="rel-arrow">→</span><span class="rel-target">Customer Lifetime Value</span><span class="tag tag-default" style="font-size:10px">one-to-many</span><span class="rel-source">Human</span></div>
+
+              <div class="rel-row inferred-row" style="display:none">
+                <span class="rel-type-pill inferred">Broader</span><span class="rel-arrow">→</span><span class="rel-target">Loyalty Member</span>
+                <span class="tag tag-info" style="font-size:10px">Inferred</span>
+                <span class="rel-source inferred">Rule-based</span>
+                <button class="btn btn-ghost btn-sm" onclick="pinAsserted(this)">Pin as asserted</button>
+                <div class="rule-caption">via transitivity — Broader is transitive: Customer → Account → Loyalty Member (Account → Loyalty Member asserted separately).</div>
+              </div>
+              <div class="rel-row inferred-row" style="display:none">
+                <span class="rel-type-pill inferred">Related</span><span class="rel-arrow">→</span><span class="rel-target">Order</span>
+                <span class="tag tag-info" style="font-size:10px">Inferred</span>
+                <span class="rel-source inferred">Rule-based</span>
+                <button class="btn btn-ghost btn-sm" onclick="pinAsserted(this)">Pin as asserted</button>
+                <div class="rule-caption">via symmetry — Related is symmetric: Order → Customer is the asserted edge; this is its mirror, not a separately stored link.</div>
+              </div>
+
+              <div class="ghost-row" onclick="showScreen('add-rel')">+ 3 more relationships · add new</div>
+            </div>
+
+            <div id="tab-assets" class="tab-content" style="display:none">
+              <div class="section-title">Linked datasets and fields</div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">crm.customers</div><div class="asset-sub">Snowflake · prod · 2.4M rows</div></div><span class="tag tag-green">Certified</span></div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">dw.dim_customer</div><div class="asset-sub">Redshift · prod_dw · 2.1M rows</div></div><span class="tag tag-green">Certified</span></div>
+              <div class="asset-row"><div class="asset-icon">🗄️</div><div style="flex:1"><div class="asset-name">salesforce.contact</div><div class="asset-sub">Salesforce · 3.1M records</div></div><span class="tag tag-default">Manual link</span></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div style="flex:1"><div class="asset-name">Customer 360 Dashboard</div><div class="asset-sub">Tableau · Finance workspace</div></div><span class="tag tag-default">BI report</span></div>
+            </div>
+
+            <div id="tab-lineage" class="tab-content" style="display:none">
+              <div style="text-align:center;padding:48px 0;color:var(--text-tertiary)">
+                <div style="font-size:32px;margin-bottom:8px">🔗</div>
+                <div style="font-weight:500;font-size:14px;margin-bottom:4px;color:var(--text-primary)">Lineage view</div>
+                <div style="font-size:13px">End-to-end lineage from source systems through the ontology to BI reports.</div>
+              </div>
+            </div>
+
+            <div id="tab-history" class="tab-content" style="display:none">
+              <div class="section-title">Version &amp; decision history</div>
+              <div class="hist-row"><div class="hist-dot" style="background:var(--success)"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Definition certified <span class="tag tag-green" style="font-size:10px">current</span></div><div style="font-size:12px;color:var(--text-tertiary)">v4 · Sarah Chen · 14 May 2026 · on evidence of 8 corrections</div></div><button class="btn btn-ghost btn-sm">View</button></div>
+              <div class="hist-row"><div class="hist-dot" style="background:var(--purple)"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Definition update accepted — from Data Steward Agent</div><div style="font-size:12px;color:var(--text-tertiary)">v3 · net-of-tax clause added · 2 May 2026</div></div><button class="btn btn-ghost btn-sm">Revert</button></div>
+              <div class="hist-row"><div class="hist-dot" style="background:var(--primary)"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Relationship added: places → Order</div><div style="font-size:12px;color:var(--text-tertiary)">v2 · Sarah Chen · 20 Apr 2026</div></div><button class="btn btn-ghost btn-sm">Revert</button></div>
+              <div class="hist-row"><div class="hist-dot" style="background:var(--text-disabled)"></div><div style="flex:1"><div style="font-size:13px;font-weight:500">Concept created — imported from CRM glossary</div><div style="font-size:12px;color:var(--text-tertiary)">v1 · 12 Apr 2026</div></div></div>
+              <p style="font-size:11px;color:var(--text-tertiary);margin-top:12px">Every change — human or agent — is versioned and written to an immutable audit trail. This decision record is the defensible governance artifact.</p>
+            </div>
+          </div>
+
+          <!-- Right info panel -->
+          <div>
+            <div class="card" style="padding:16px">
+              <div class="info-panel">
+                <div>
+                  <div class="info-label" title="Share of agent lookups in the last 30 days where this definition was used without a correction or contested edit.">Definition stability &#9432;</div>
+                  <div class="info-value" style="font-size:20px;font-weight:700;color:var(--success)">92%</div>
+                  <div class="conf-bar"><div class="conf-fill" style="width:92%"></div></div>
+                  <div style="font-size:11px;color:var(--text-tertiary);margin-top:4px">No contested edits across <strong>340</strong> agent lookups (30d) · maintained by <strong style="color:var(--purple)">Ontology Agent</strong></div>
+                </div>
+                <hr class="divider">
+                <div><div class="info-label">Certification</div><div class="info-value green">✓ Certified — Finance</div></div>
+                <div><div class="info-label">Owner</div><div class="info-value">Sarah Chen</div></div>
+                <div><div class="info-label">Standard</div><div class="info-value">SKOS · skos:Concept · <span title="Open Semantic Interchange">OSI</span> <span class="tag tag-default" style="font-size:9px">beta</span></div></div>
+                <hr class="divider">
+                <div><div class="info-label">Governance record</div><div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Certified by <strong style="color:var(--text-primary)">Sarah Chen</strong> · 14 May 2026, on evidence of 8 corrections. <span style="color:var(--primary);cursor:pointer" onclick="switchTabById('tab-history')">View history →</span></div></div>
+              </div>
+            </div>
+
+            <div class="card" style="padding:16px;margin-top:14px">
+              <div class="info-label" style="margin-bottom:12px">Agent-to-agent</div>
+              <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">
+                <span class="dir-chip out">OUT</span>
+                <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Canonical definition served to the <strong>Data Steward Agent</strong> + 3 tools over MCP — grounding 340 answers this month.</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:12px">
+                <span class="dir-chip in">IN</span>
+                <div style="font-size:12px;color:var(--text-secondary);line-height:1.5">Data Steward Agent raised <strong style="color:var(--purple)">3 proposals</strong> from usage &amp; data-quality signals.</div>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="padding-left:0" onclick="showScreen('queue')">Review proposals →</button>
+              <button class="btn btn-ghost btn-sm" style="padding-left:0" onclick="showScreen('activity')">See agent activity →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 3 — ADD RELATIONSHIP
+    ═════════════════════════════════════════ -->
+    <div id="screen-add-rel" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-link" onclick="showScreen('detail')">Customer</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Add relationship</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 3 · Add relationship</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('detail')">Cancel</button>
+          <button class="btn btn-primary btn-sm">Save relationship</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="form-layout">
+          <div>
+            <div class="ai-suggest">
+              <span style="font-size:18px;flex-shrink:0">✨</span>
+              <div class="ai-suggest-body">
+                <strong>Ontology Agent suggests:</strong> "Customer" is <strong>Broader than</strong> "Loyalty Member" — flagged by the <strong>Data Steward Agent</strong> from 47 queries in the last 30 days where users navigated Customer → Loyalty Member expecting a parent relationship.
+                <div class="ai-suggest-actions">
+                  <button class="btn btn-sm btn-primary" style="background:var(--purple)">Accept suggestion</button>
+                  <button class="btn btn-sm btn-secondary">Dismiss</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="form-group">
+                <label class="form-label">Source concept <span class="req">*</span></label>
+                <input class="form-input readonly" type="text" value="Customer" readonly>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Relationship type <span class="req">*</span></label>
+                <div class="rel-type-grid" id="relTypeGrid">
+                  <div class="rel-opt selected" onclick="selectRel(this)"><div class="rel-opt-name">Broader</div><div class="rel-opt-desc">Source is parent concept (SKOS)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Narrower</div><div class="rel-opt-desc">Source is child concept</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Related</div><div class="rel-opt-desc">Associative, symmetric (SKOS)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Not same as</div><div class="rel-opt-desc">Explicitly disjoint (OWL)</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Calculated from</div><div class="rel-opt-desc">Derived metric relationship</div></div>
+                  <div class="rel-opt" onclick="selectRel(this)"><div class="rel-opt-name">Custom…</div><div class="rel-opt-desc">Define a new type</div></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Target concept <span class="req">*</span></label>
+                <div class="search-bar" style="margin-bottom:8px">
+                  <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="4"/><path d="M10.5 10.5l2.5 2.5"/></svg>
+                  <input type="text" placeholder="Search concepts…" value="Loyalty Member">
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--bg-grey-1);border-radius:var(--radius-md);border:1px solid var(--border-default)">
+                  <span style="font-size:18px">🎖️</span>
+                  <div><div style="font-weight:500;font-size:13px">Loyalty Member</div><div style="font-size:11px;color:var(--text-tertiary)">Finance · Business entity · Draft</div></div>
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Cardinality</label>
+                <select class="form-select"><option>Unspecified</option><option selected>One-to-many</option><option>Many-to-many</option><option>One-to-one</option></select>
+                <div class="form-hint">Descriptive only — not enforced in v1.</div>
+              </div>
+              <div class="form-group" style="margin-bottom:0">
+                <label class="form-label">Note (optional)</label>
+                <input class="form-input" type="text" placeholder="Rationale or context for this relationship…">
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview -->
+          <div class="preview-card">
+            <div class="section-title">Preview</div>
+            <div class="preview-diagram">
+              <div class="preview-node source">Customer</div>
+              <div class="preview-connector">
+                <div class="preview-connector-line"></div>
+                <div class="preview-connector-label">Broader ↕ Narrower</div>
+                <div class="preview-connector-line"></div>
+              </div>
+              <div class="preview-node target">Loyalty Member</div>
+            </div>
+            <hr class="divider">
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+              <p><strong style="color:var(--text-primary)">Cardinality:</strong> One-to-many (descriptive)</p>
+            </div>
+            <hr class="divider">
+            <div class="rule-callout" style="margin-bottom:10px">Inferred from declared rules — transitivity, symmetry, inverse. Rule-based, not a full OWL reasoner.</div>
+            <div style="font-size:12px;color:var(--text-secondary);line-height:1.6">
+              <div style="font-weight:600;color:var(--text-primary);margin-bottom:6px">What saving this triggers</div>
+              <p style="display:flex;gap:6px"><span class="tag tag-info" style="font-size:9px;flex-shrink:0;margin-top:2px">Inverse</span> A "Narrower" relationship from Loyalty Member → Customer is auto-created — stored, not just computed.</p>
+              <p style="display:flex;gap:6px;margin-top:8px"><span class="tag tag-info" style="font-size:9px;flex-shrink:0;margin-top:2px">Transitive</span> Broader is transitive: any future Broader edge from Loyalty Member will make Customer transitively Broader too, computed live — no extra edge stored.</p>
+              <p style="display:flex;gap:6px;margin-top:8px"><span class="tag tag-default" style="font-size:9px;flex-shrink:0;margin-top:2px">N/A</span> Broader isn't symmetric, so no symmetric mirror applies here.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 4 — FEDERATION CONFLICT
+    ═════════════════════════════════════════ -->
+    <div id="screen-conflict" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur" style="color:var(--warning)">⚠ Conflict · Active Customer</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge" style="background:var(--warning-bg);color:var(--warning)">Screen 4 · Federation conflict</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('browser')">← Back</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="conflict-banner">
+          <svg width="22" height="22" viewBox="0 0 20 20" fill="none" style="color:var(--warning);flex-shrink:0;margin-top:1px"><path d="M10 3L18 17H2L10 3z" stroke="currentColor" stroke-width="1.5"/><path d="M10 9v3.5M10 14.5v.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <div style="flex:1">
+            <div style="font-weight:600;font-size:14px;color:#7A4500">Two domains define "Active Customer" differently</div>
+            <div style="font-size:12px;color:#9A5800;margin-top:2px">Detected by <strong>Ontology Agent</strong> · June 1, 2026 · 3 datasets · 12 agent queries this week</div>
+            <div style="font-size:11px;color:#9A5800;margin-top:3px;opacity:0.85">Detection basis: same concept name across 2 domains with definitions diverging past threshold (heuristic — not semantic inference)</div>
+          </div>
+          <button class="btn btn-sm btn-secondary">Notify owners</button>
+        </div>
+
+        <div class="conflict-grid">
+          <div class="conflict-card left">
+            <div class="conflict-domain blue">Finance domain</div>
+            <div class="conflict-concept">Active Customer</div>
+            <div class="conflict-def">A customer who holds at least one paid account with no churn event in the preceding 90 days. Churn is defined as voluntary cancellation or involuntary lapse due to non-payment. Calculated from the CRM "account_status" field.</div>
+            <div class="conflict-diff">90-day window · billing-based · CRM source</div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:6px">Datasets</div>
+              <div class="asset-row" style="margin-bottom:5px"><div class="asset-icon">🗄️</div><div><div class="asset-name" style="font-size:12px">crm.active_customers</div><div class="asset-sub">Snowflake · 1.2M rows</div></div></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div><div class="asset-name" style="font-size:12px">Finance KPI Dashboard</div><div class="asset-sub">Tableau · 47 users</div></div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-tertiary)">Owner: <strong style="color:var(--text-primary)">Sarah Chen</strong> · Updated 3 days ago</div>
+          </div>
+
+          <div class="conflict-card right">
+            <div class="conflict-domain green">Marketing domain</div>
+            <div class="conflict-concept">Active Customer</div>
+            <div class="conflict-def">A customer who has opened or clicked at least one marketing email, or visited a product page, in the past 60 days. Tracked via HubSpot. Includes free-tier users.</div>
+            <div class="conflict-diff">60-day window · engagement-based · HubSpot source</div>
+            <div style="margin-bottom:10px">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-tertiary);margin-bottom:6px">Datasets</div>
+              <div class="asset-row" style="margin-bottom:5px"><div class="asset-icon">🗄️</div><div><div class="asset-name" style="font-size:12px">hubspot.engaged_contacts</div><div class="asset-sub">HubSpot · 2.8M records</div></div></div>
+              <div class="asset-row"><div class="asset-icon">📊</div><div><div class="asset-name" style="font-size:12px">Campaign Performance</div><div class="asset-sub">Looker · 23 users</div></div></div>
+            </div>
+            <div style="font-size:12px;color:var(--text-tertiary)">Owner: <strong style="color:var(--text-primary)">Priya Naidu</strong> · Updated 1 week ago</div>
+          </div>
+        </div>
+
+        <div class="impact-card">
+          <div style="font-weight:600;font-size:14px;margin-bottom:12px">Why this matters</div>
+          <div style="display:flex;gap:28px;margin-bottom:12px;flex-wrap:wrap">
+            <div><div style="font-size:32px;font-weight:700;letter-spacing:-0.03em;color:var(--error);line-height:1">1.6M</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:3px">customer-count gap between<br>the two definitions</div></div>
+            <div><div style="font-size:32px;font-weight:700;letter-spacing:-0.03em;color:var(--error);line-height:1">12</div><div style="font-size:11px;color:var(--text-tertiary);margin-top:3px">agent queries this week answered<br>on an ambiguous basis</div></div>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.7">Without a canonical definition, answers swing by up to 1.6M customers depending on which dataset is consulted first. A Finance report and a Marketing report run on the same day will give contradictory totals. <span style="color:var(--text-tertiary)">Source: agent query logs · last 7d</span></p>
+        </div>
+
+        <div class="resolution-card">
+          <div style="font-weight:600;font-size:15px;margin-bottom:4px">Resolve this conflict</div>
+          <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:16px">Choose how to handle the two definitions. On resolve, the <strong style="color:var(--purple)">Ontology Agent</strong> pushes the canonical definition to the <strong>Data Steward Agent</strong>, which re-certifies all 3 affected datasets automatically.</div>
+          <div class="res-option">
+            <div class="res-icon">👑</div>
+            <div style="flex:1"><div class="res-label">Use Finance definition as canonical</div><div class="res-desc">Marketing's version becomes a domain-local alias. Requires acknowledgement from Marketing owner (Priya Naidu) before it applies.</div></div>
+            <button class="btn btn-sm btn-secondary">Select</button>
+          </div>
+          <div class="res-option" style="border-color:var(--primary);background:var(--primary-light)">
+            <div class="res-icon">✂️</div>
+            <div style="flex:1"><div class="res-label">Split into two distinct concepts</div><div class="res-desc">Create "Active Customer (Finance)" and "Active Customer (Marketing)" with a "Not same as" relationship.</div></div>
+            <button class="btn btn-sm btn-primary" onclick="resolveConflict(this)">Select</button>
+          </div>
+          <div class="res-option">
+            <div class="res-icon">📅</div>
+            <div style="flex:1"><div class="res-label">Schedule a steward review</div><div class="res-desc">Notify Sarah Chen and Priya Naidu to align on a shared definition. Conflict stays open.</div></div>
+            <button class="btn btn-sm btn-secondary">Select</button>
+          </div>
+          <div class="res-option">
+            <div class="res-icon">✓</div>
+            <div style="flex:1"><div class="res-label">Not a conflict — dismiss</div><div class="res-desc">These are intentionally distinct. Marks the alert resolved and suppresses re-flagging of this pair.</div></div>
+            <button class="btn btn-sm btn-secondary">Select</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 5 — STEWARD QUEUE
+    ═════════════════════════════════════════ -->
+    <div id="screen-queue" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Review queue</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge">Screen 5 · Steward queue</span>
+          <button class="btn btn-secondary btn-sm" onclick="showScreen('browser')">← Back</button>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+        <div class="agent-strip" onclick="showScreen('activity')">
+          <span class="agent-live-dot"></span>
+          <div style="flex:1;font-size:13px;color:var(--text-secondary)"><strong style="color:var(--text-primary)">Your checkpoint in the agent loop.</strong> The Ontology and Data Steward agents propose changes from data &amp; usage signals; nothing is applied until you approve. <span style="color:var(--purple);font-weight:500">See how they collaborate &rarr;</span></div>
+        </div>
+        <div class="stats-row" style="grid-template-columns:repeat(5,1fr)">
+          <div class="stat-card"><div class="stat-num red">7</div><div class="stat-lbl">Pending review</div></div>
+          <div class="stat-card"><div class="stat-num amber">2</div><div class="stat-lbl">Conflicts open</div></div>
+          <div class="stat-card"><div class="stat-num purple">5</div><div class="stat-lbl">AI-generated</div></div>
+          <div class="stat-card"><div class="stat-num green">23</div><div class="stat-lbl">Accepted this month</div></div>
+          <div class="stat-card" title="Every accept / edit / reject is written to an immutable decision log."><div class="stat-num" style="color:var(--text-primary)">1,240</div><div class="stat-lbl">Decisions logged (audit)</div></div>
+        </div>
+
+        <div class="filter-row">
+          <button class="filter-pill active" onclick="activePill(this)">All (7)</button>
+          <button class="filter-pill" onclick="activePill(this)">AI proposals (5)</button>
+          <button class="filter-pill" onclick="activePill(this)">User edits (2)</button>
+          <button class="filter-pill" onclick="activePill(this)">Conflicts (2)</button>
+          <button class="filter-pill" onclick="activePill(this)">Definitions (3)</button>
+          <button class="filter-pill" onclick="activePill(this)">Relationships (4)</button>
+        </div>
+
+        <!-- Q1 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">Definition update · <strong>Revenue</strong></div>
+            <div class="q-meta">Data Steward Agent → Ontology Agent · 2 hours ago <span class="tag tag-purple" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">Triggered by 8 user corrections where agents returned pre-tax revenue figures for APAC queries. Users consistently specified net-of-tax. <span style="color:var(--text-tertiary);font-size:11px">· source: query logs (30d)</span></div>
+            <div class="diff-row">
+              <div class="diff-before"><div class="diff-lbl">BEFORE</div>Total recognised income from customer transactions in a given period.</div>
+              <div class="diff-after"><div class="diff-lbl">AFTER</div>Total recognised income from customer transactions in a given period, net of applicable taxes and excluding inter-company eliminations.</div>
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px" onclick="acceptItem(this)">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--error)" onclick="rejectItem(this)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q2 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">New relationship · <strong>Customer → Related → Prospect</strong></div>
+            <div class="q-meta">Data Steward Agent → Ontology Agent · 1 day ago <span class="tag tag-purple" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">34 queries navigated from "Customer" to "Prospect" expecting a semantic link. No relationship currently exists.</div>
+            <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+              <span style="background:var(--primary-light);color:var(--primary);padding:4px 10px;border-radius:var(--radius-md);font-size:12px;font-weight:500">Customer</span>
+              <span style="font-size:12px;color:var(--text-tertiary)">—— Related ——→</span>
+              <span style="background:var(--bg-grey-2);border:1px solid var(--border-strong);padding:4px 10px;border-radius:var(--radius-md);font-size:12px;font-weight:500">Prospect</span>
+              <span class="tag tag-default" style="font-size:10px">symmetric</span>
+            </div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px" onclick="acceptItem(this)">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--error)" onclick="rejectItem(this)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q3 conflict -->
+        <div class="q-item conflict-item">
+          <div class="q-icon conflict">⚠️</div>
+          <div class="q-body">
+            <div class="q-title">Semantic conflict · <strong>Active Customer</strong></div>
+            <div class="q-meta">Ontology Agent detected · 3 days ago <span class="tag tag-amber" style="font-size:10px">Conflict</span></div>
+            <div class="q-evidence">Finance and Marketing define this concept differently. Agents returning inconsistent answers. 3 datasets affected.</div>
+          </div>
+          <div class="q-actions" style="flex-direction:row;padding-top:0">
+            <button class="btn btn-sm btn-secondary" onclick="showScreen('conflict')">Review →</button>
+          </div>
+        </div>
+
+        <!-- Q4 -->
+        <div class="q-item">
+          <div class="q-icon user">👤</div>
+          <div class="q-body">
+            <div class="q-title">Attribute added · <strong>Customer · SegmentCode</strong></div>
+            <div class="q-meta">Proposed by Jan Kovar · 2 days ago <span class="tag tag-primary" style="font-size:10px">User edit</span></div>
+            <div class="q-evidence">New attribute "SegmentCode" proposed to align Customer entity with engagement segmentation. Type: String · Values: ENTERPRISE / MID / SMB.</div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px" onclick="acceptItem(this)">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--error)" onclick="rejectItem(this)">Reject</button>
+          </div>
+        </div>
+
+        <!-- Q5 -->
+        <div class="q-item">
+          <div class="q-icon ai">✨</div>
+          <div class="q-body">
+            <div class="q-title">New concept · <strong>Churn Event</strong></div>
+            <div class="q-meta">Data Steward Agent → Ontology Agent · 4 days ago <span class="tag tag-purple" style="font-size:10px">AI proposed</span></div>
+            <div class="q-evidence">"Churn Event" appears in 67 queries but has no canonical definition. Agent bootstrapped a draft from crm.churn_log table metadata.</div>
+          </div>
+          <div class="q-actions">
+            <button class="btn btn-sm btn-primary" style="width:80px" onclick="acceptItem(this)">Accept</button>
+            <button class="btn btn-sm btn-secondary" style="width:80px">Edit</button>
+            <button class="btn btn-sm btn-ghost" style="width:80px;color:var(--error)" onclick="rejectItem(this)">Reject</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ════════════════════════════════════════
+         SCREEN 6 — AGENT ACTIVITY (A2A)
+    ═════════════════════════════════════════ -->
+    <div id="screen-activity" class="screen">
+      <div class="topbar">
+        <div class="breadcrumb">
+          <span class="bc-link" onclick="showScreen('browser')">Ontology</span>
+          <span class="bc-sep">›</span>
+          <span class="bc-cur">Agent activity</span>
+        </div>
+        <div class="topbar-right">
+          <span class="screen-badge" style="background:var(--purple-bg);color:var(--purple)">Agent-to-agent</span>
+          <div class="tb-avatar">OV</div>
+        </div>
+      </div>
+      <div class="content">
+
+        <div class="card" style="margin-bottom:18px">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+            <span class="agent-live-dot"></span>
+            <div style="font-size:16px;font-weight:600">Two agents keep meaning and data in sync</div>
+          </div>
+          <p style="font-size:13px;color:var(--text-secondary);line-height:1.6;margin-bottom:20px;max-width:820px">The <strong style="color:var(--purple)">Ontology Agent</strong> owns the semantic model; the <strong style="color:var(--primary)">Data Steward Agent</strong> governs the data in the catalog. They exchange proposals continuously over the Model Context Protocol, and every change a human should see is routed to the <span style="color:var(--primary);cursor:pointer;font-weight:500" onclick="showScreen('queue')">review queue</span>. Nothing is applied autonomously.</p>
+
+          <div style="max-width:820px;margin:0 auto">
+            <svg viewBox="0 0 820 210" style="width:100%;height:auto" font-family="Roboto,sans-serif">
+              <defs>
+                <marker id="ah-purple" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#6B3FA0"/></marker>
+                <marker id="ah-blue" markerWidth="9" markerHeight="9" refX="5.5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#0283BE"/></marker>
+              </defs>
+              <rect x="20" y="55" width="220" height="100" rx="10" fill="#F3EEFF" stroke="#C4AEE8" stroke-width="1.5"/>
+              <text x="130" y="90" text-anchor="middle" font-size="22">&#10022;</text>
+              <text x="130" y="117" text-anchor="middle" font-size="14" font-weight="600" fill="#000">Ontology Agent</text>
+              <text x="130" y="135" text-anchor="middle" font-size="10.5" fill="#595968">Owns meaning: concepts,</text>
+              <text x="130" y="149" text-anchor="middle" font-size="10.5" fill="#595968">definitions, relationships</text>
+              <rect x="580" y="55" width="220" height="100" rx="10" fill="#E5F4FB" stroke="#A9D9EF" stroke-width="1.5"/>
+              <text x="690" y="90" text-anchor="middle" font-size="20">&#128737;</text>
+              <text x="690" y="117" text-anchor="middle" font-size="14" font-weight="600" fill="#000">Data Steward Agent</text>
+              <text x="690" y="135" text-anchor="middle" font-size="10.5" fill="#595968">Governs data: quality,</text>
+              <text x="690" y="149" text-anchor="middle" font-size="10.5" fill="#595968">lineage, query usage</text>
+              <path d="M244,86 C380,52 440,52 576,86" fill="none" stroke="#6B3FA0" stroke-width="2" marker-end="url(#ah-purple)"/>
+              <rect x="322" y="43" width="176" height="20" rx="10" fill="#F3EEFF"/>
+              <text x="410" y="57" text-anchor="middle" font-size="11" font-weight="600" fill="#6B3FA0">OUT &#183; publishes meaning</text>
+              <path d="M576,124 C440,158 380,158 244,124" fill="none" stroke="#0283BE" stroke-width="2" marker-end="url(#ah-blue)"/>
+              <rect x="322" y="147" width="176" height="20" rx="10" fill="#E5F4FB"/>
+              <text x="410" y="161" text-anchor="middle" font-size="11" font-weight="600" fill="#0283BE">IN &#183; proposes changes</text>
+              <rect x="366" y="95" width="88" height="20" rx="10" fill="#fff" stroke="#DDDDE5"/>
+              <text x="410" y="109" text-anchor="middle" font-size="9.5" fill="#595968">via MCP</text>
+            </svg>
+            <p style="text-align:center;font-size:12px;color:var(--text-secondary);line-height:1.6;margin-top:8px;max-width:720px;margin-left:auto;margin-right:auto">Two <strong>accountable</strong> agents with a clear separation of duties &mdash; semantic ownership vs. data governance, not an unauditable swarm. A human approves every change.</p>
+            <p style="text-align:center;font-size:11px;color:var(--text-tertiary);margin-top:4px">The Data Steward Agent is the platform's existing governance agent, extended to exchange proposals with the new Ontology Agent.</p>
+          </div>
+        </div>
+
+        <div class="stats-row">
+          <div class="stat-card"><div class="stat-num purple">18</div><div class="stat-lbl">Proposals exchanged (7d)</div></div>
+          <div class="stat-card"><div class="stat-num green">11</div><div class="stat-lbl">Accepted by stewards</div></div>
+          <div class="stat-card"><div class="stat-num" style="color:var(--primary)">6</div><div class="stat-lbl">Context pushes to catalog</div></div>
+          <div class="stat-card"><div class="stat-num">5</div><div class="stat-lbl">Downstream consumers</div></div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 300px;gap:18px;align-items:start">
+          <div class="card">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+              <span class="agent-live-dot"></span>
+              <div class="section-title" style="margin:0">Recent agent activity</div>
+              <span style="margin-left:auto;font-size:11px;color:var(--text-tertiary);display:inline-flex;align-items:center;gap:6px"><span class="dir-chip in">IN</span>proposal into ontology&nbsp;&nbsp;<span class="dir-chip out">OUT</span>certified meaning published</span>
+            </div>
+
+            <div class="feed-item">
+              <span class="dir-chip in">IN</span>
+              <div style="flex:1">
+                <div class="feed-title">Data Steward Agent proposed a new concept — <strong>Churn Event</strong></div>
+                <div class="feed-desc">Seen in 67 queries with no canonical definition. Ontology Agent bootstrapped a draft from <em>crm.churn_log</em> metadata and routed it for review.</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0"><div class="feed-time">2h ago</div><button class="btn btn-ghost btn-sm" onclick="showScreen('queue')" style="padding:2px 6px">Queue →</button></div>
+            </div>
+
+            <div class="feed-item">
+              <span class="dir-chip out">OUT</span>
+              <div style="flex:1">
+                <div class="feed-title">Ontology Agent pushed a certified definition — <strong>Revenue</strong></div>
+                <div class="feed-desc">Net-of-tax definition certified by a steward. Pushed to the Data Steward Agent; 3 datasets re-certified and pending answers realigned.</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0"><div class="feed-time">5h ago</div></div>
+            </div>
+
+            <div class="feed-item">
+              <span class="dir-chip in">IN</span>
+              <div style="flex:1">
+                <div class="feed-title">Data Steward Agent flagged definition drift — <strong>Revenue (APAC)</strong></div>
+                <div class="feed-desc">8 user corrections returned pre-tax figures for APAC queries. Steward proposed a definition update; Ontology Agent drafted the diff.</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0"><div class="feed-time">1d ago</div><button class="btn btn-ghost btn-sm" onclick="showScreen('queue')" style="padding:2px 6px">Queue →</button></div>
+            </div>
+
+            <div class="feed-item">
+              <span class="dir-chip out">OUT</span>
+              <div style="flex:1">
+                <div class="feed-title">Ontology Agent resolved a conflict — <strong>Active Customer</strong></div>
+                <div class="feed-desc">Split into Finance and Marketing concepts with a "Not same as" link. Steward Agent updated routing so each domain's answers use the right definition.</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0"><div class="feed-time">2d ago</div><button class="btn btn-ghost btn-sm" onclick="showScreen('conflict')" style="padding:2px 6px">View →</button></div>
+            </div>
+
+            <div class="feed-item">
+              <span class="dir-chip in">IN</span>
+              <div style="flex:1">
+                <div class="feed-title">Data Steward Agent proposed a relationship — <strong>Customer → Related → Prospect</strong></div>
+                <div class="feed-desc">34 queries navigated Customer → Prospect expecting a semantic link. Ontology Agent proposed the edge for steward review.</div>
+              </div>
+              <div style="text-align:right;flex-shrink:0"><div class="feed-time">1d ago</div><button class="btn btn-ghost btn-sm" onclick="showScreen('queue')" style="padding:2px 6px">Queue →</button></div>
+            </div>
+          </div>
+
+          <div>
+            <div class="card" style="margin-bottom:14px">
+              <div class="section-title">Context served over MCP</div>
+              <div style="font-size:12px;color:var(--text-tertiary);margin-bottom:6px">Agents &amp; tools consuming canonical meaning from this ontology.</div>
+              <div style="font-size:11px;color:var(--text-tertiary);margin-bottom:12px;padding:6px 8px;background:var(--bg-grey-1);border-radius:var(--radius-sm)">MCP server · 5 read-scoped tools · token-auth · no PII in responses</div>
+              <div class="mcp-row"><span class="mcp-dot"></span><div style="flex:1"><div style="font-size:13px;font-weight:500">Data Steward Agent</div><div style="font-size:11px;color:var(--text-tertiary)">Platform · 340 lookups (30d)</div></div></div>
+              <div class="mcp-row"><span class="mcp-dot"></span><div style="flex:1"><div style="font-size:13px;font-weight:500">NL Explorer</div><div style="font-size:11px;color:var(--text-tertiary)">Ask-your-data · 1.2k queries</div></div></div>
+              <div class="mcp-row"><span class="mcp-dot"></span><div style="flex:1"><div style="font-size:13px;font-weight:500">BI semantic layer</div><div style="font-size:11px;color:var(--text-tertiary)">Dashboards · 47 metrics</div></div></div>
+              <div class="mcp-row" style="opacity:0.75"><span class="mcp-dot" style="background:var(--text-disabled)"></span><div style="flex:1"><div style="font-size:13px;font-weight:500">Claude / ChatGPT <span class="tag tag-default" style="font-size:9px">Planned</span></div><div style="font-size:11px;color:var(--text-tertiary)">External agents · scoped MCP</div></div></div>
+            </div>
+            <div class="card">
+              <div class="section-title">Human in the loop</div>
+              <p style="font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px">Proposals are queued for a steward. Nothing is applied without approval.</p>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px"><span style="color:var(--text-tertiary)">Pending review</span><strong style="color:var(--error)">7</strong></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:14px"><span style="color:var(--text-tertiary)">Accepted this month</span><strong style="color:var(--success)">23</strong></div>
+              <button class="btn btn-primary btn-sm" style="width:100%" onclick="showScreen('queue')">Open review queue →</button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+</div>
+
+  <!-- ─── GLOBAL CHAT (ONTOLOGY AGENT) — floating launcher + slide-over, reachable from every screen ─── -->
+  <button class="chat-fab" id="chat-fab" onclick="toggleChat(true)" title="Ask the Ontology Agent">
+    <span class="chat-fab-dot"></span>
+    <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M2 4a2 2 0 012-2h12a2 2 0 012 2v8a2 2 0 01-2 2H8l-4 3v-3H4a2 2 0 01-2-2V4z"/></svg>
+  </button>
+
+  <div class="chat-panel" id="chat-panel">
+    <div class="chat-head">
+      <div class="chat-head-icon">💬</div>
+      <div style="flex:1">
+        <div class="chat-head-title">Ontology Agent</div>
+        <div class="chat-head-sub"><span class="agent-live-dot"></span> Ask about any concept, relationship, or conflict</div>
+      </div>
+      <span class="chat-x" onclick="toggleChat(false)">&times;</span>
+    </div>
+
+    <div class="chat-body" id="chat-body">
+      <div class="chat-msg agent">Hi Ondrej — I'm the Ontology Agent. Ask me about any concept, its relationships, or open conflicts, and I can take you straight to the right screen.</div>
+      <div class="chat-msg user">What does &quot;Active Customer&quot; mean, and why is it flagged?</div>
+      <div class="chat-msg agent">Finance and Marketing define it differently — Finance ties it to billing status, Marketing to engagement in the last 90 days. That's an open conflict affecting ~1.6M records across 3 datasets. <span class="chat-link" onclick="chatGoTo('conflict')">Open the conflict view →</span></div>
+    </div>
+
+    <div class="chat-suggest-row">
+      <span class="chat-suggest-chip" onclick="chatQuickAsk(this)">Show open conflicts</span>
+      <span class="chat-suggest-chip" onclick="chatQuickAsk(this)">What's pending in my review queue?</span>
+      <span class="chat-suggest-chip" onclick="chatQuickAsk(this)">Define &quot;Customer&quot;</span>
+    </div>
+
+    <div class="chat-input-row">
+      <textarea class="chat-input" id="chat-input" rows="1" placeholder="Ask the Ontology Agent…" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChatMessage();}"></textarea>
+      <button class="chat-send" onclick="sendChatMessage()" title="Send">
+        <svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor"><path d="M1 8l13-6-4 6 4 6z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- ─── MODALS ─── -->
+  <div id="modal-export" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-export')">
+    <div class="modal">
+      <div class="modal-head"><span>Export ontology for interchange</span><span class="modal-x" onclick="closeModal('modal-export')">&times;</span></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Export the certified ontology so other tools and agents share the same meaning.</p>
+        <div class="fmt-opt"><div><div class="fmt-name">SKOS &mdash; Turtle (.ttl)</div><div class="fmt-desc">W3C standard &middot; glossary interchange &middot; required by Statnett</div></div><button class="btn btn-sm btn-secondary">Export</button></div>
+        <div class="fmt-opt"><div><div class="fmt-name">SKOS / JSON-LD</div><div class="fmt-desc">Linked-data JSON for programmatic use</div></div><button class="btn btn-sm btn-secondary">Export</button></div>
+        <div class="fmt-opt"><div><div class="fmt-name">OSI &mdash; Open Semantic Interchange <span class="tag tag-default" style="font-size:9px">beta</span></div><div class="fmt-desc">Emerging cross-vendor standard (Atlan, Snowflake, dbt&hellip;) &middot; membership under evaluation</div></div><button class="btn btn-sm btn-secondary">Export</button></div>
+      </div>
+    </div>
+  </div>
+  <div id="modal-import" class="modal-overlay" onclick="if(event.target===this)closeModal('modal-import')">
+    <div class="modal">
+      <div class="modal-head"><span>Import / bootstrap concepts</span><span class="modal-x" onclick="closeModal('modal-import')">&times;</span></div>
+      <div class="modal-body">
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:14px">Start from an existing source instead of a blank slate &mdash; the fastest path off spreadsheets and Miro.</p>
+        <div class="fmt-opt"><div><div class="fmt-name">Let the agent bootstrap from your catalog</div><div class="fmt-desc">Ontology Agent proposes concepts from dataset metadata &amp; query usage &middot; you review each</div></div><button class="btn btn-sm btn-primary">Start</button></div>
+        <div class="fmt-opt"><div><div class="fmt-name">Import glossary (CSV / Excel)</div><div class="fmt-desc">Map existing business terms to concepts</div></div><button class="btn btn-sm btn-secondary">Upload</button></div>
+        <div class="fmt-opt"><div><div class="fmt-name">Import from Miro board</div><div class="fmt-desc">Bring the ontology you maintain in Miro (Mobivia)</div></div><button class="btn btn-sm btn-secondary">Connect</button></div>
+        <div class="fmt-opt"><div><div class="fmt-name">SKOS / JSON-LD file</div><div class="fmt-desc">Standards-based import</div></div><button class="btn btn-sm btn-secondary">Upload</button></div>
+      </div>
+    </div>
+  </div>
+
+<script>
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + name).classList.add('active');
+  document.querySelectorAll('.sb-nav-item').forEach(n => n.classList.remove('active'));
+  const navItems = document.querySelectorAll('.sb-nav-item');
+  if (['browser','detail','add-rel'].includes(name)) {
+    navItems[0].classList.add('active');
+  } else if (name === 'activity') {
+    navItems[1].classList.add('active');
+  } else if (name === 'queue') {
+    navItems[2].classList.add('active');
+  } else if (name === 'conflict') {
+    navItems[3].classList.add('active');
+  }
+}
+function switchView(v) {
+  document.getElementById('view-list').style.display = v === 'list' ? 'block' : 'none';
+  document.getElementById('view-graph').style.display = v === 'graph' ? 'block' : 'none';
+  document.querySelectorAll('.view-btn').forEach((b,i) => b.classList.toggle('active', v === 'list' ? i===0 : i===1));
+}
+function switchTab(el, id) {
+  el.closest('.screen').querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  el.closest('.screen').querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+  el.classList.add('active');
+  document.getElementById(id).style.display = 'block';
+}
+function selectRel(el) {
+  document.querySelectorAll('.rel-opt').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+}
+function activePill(el) {
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function switchTabById(id){
+  var content=document.getElementById(id); if(!content) return;
+  var screen=content.closest('.screen');
+  screen.querySelectorAll('.tab-content').forEach(function(c){c.style.display='none';});
+  screen.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  content.style.display='block';
+  screen.querySelectorAll('.tab').forEach(function(t){var oc=t.getAttribute('onclick'); if(oc&&oc.indexOf("'"+id+"'")>-1)t.classList.add('active');});
+}
+function acceptItem(btn){
+  var item=btn.closest('.q-item'); var actions=btn.closest('.q-actions');
+  actions.innerHTML='<div style="width:80px;text-align:center;color:var(--success);font-weight:600;font-size:12px">\u2713 Accepted</div>';
+  item.style.opacity='0.8';
+  var body=item.querySelector('.q-body'); var note=document.createElement('div');
+  note.style.cssText='margin-top:8px;font-size:11px;color:var(--success)';
+  note.textContent='Applied and pushed to Data Steward Agent \u00b7 written to audit trail';
+  body.appendChild(note);
+}
+function rejectItem(btn){
+  var actions=btn.closest('.q-actions');
+  actions.innerHTML='<select class="form-select" style="font-size:11px;padding:5px 6px" onchange="rejectDone(this)"><option>Reject reason\u2026</option><option>Incorrect</option><option>Already exists</option><option>Not useful</option></select>';
+}
+function rejectDone(sel){
+  var actions=sel.closest('.q-actions'); var item=sel.closest('.q-item');
+  actions.innerHTML='<div style="width:80px;text-align:center;color:var(--error);font-weight:600;font-size:12px">Rejected</div>';
+  item.style.opacity='0.65';
+  var body=item.querySelector('.q-body'); var note=document.createElement('div');
+  note.style.cssText='margin-top:8px;font-size:11px;color:var(--text-tertiary)';
+  note.textContent='Rejected ('+sel.value+') \u00b7 agent will not re-propose \u00b7 logged';
+  body.appendChild(note);
+}
+function resolveConflict(btn){
+  var card=btn.closest('.resolution-card');
+  if(card.querySelector('.resolved-banner')) return;
+  var banner=document.createElement('div');
+  banner.className='alert-bar resolved-banner';
+  banner.style.cssText='background:var(--success-bg);border-color:#A3D9A3;margin-top:14px;margin-bottom:0;cursor:default';
+  banner.innerHTML='<span style="color:var(--success);font-size:16px">\u2713</span><div class="alert-bar-text" style="color:#024302">Conflict resolved &mdash; split into two concepts. Ontology Agent pushed both definitions to the Data Steward Agent; 3 datasets re-certified. Written to audit trail.</div>';
+  card.appendChild(banner);
+  btn.textContent='\u2713 Done'; btn.disabled=true;
+}
+function openModal(id){document.getElementById(id).style.display='flex';}
+function closeModal(id){document.getElementById(id).style.display='none';}
+
+/* ─── INFERRED RULES (v6) ─── */
+function toggleInferred(checkbox){
+  var rows = checkbox.closest('.tab-content').querySelectorAll('.inferred-row');
+  rows.forEach(function(r){ r.style.display = checkbox.checked ? 'flex' : 'none'; });
+}
+function pinAsserted(btn){
+  var row = btn.closest('.rel-row');
+  row.querySelector('.tag.tag-info').outerHTML = '<span class="tag tag-green" style="font-size:10px">Pinned · asserted</span>';
+  row.querySelector('.rel-source.inferred').textContent = 'Human';
+  row.querySelector('.rel-source.inferred').classList.remove('inferred');
+  btn.remove();
+  var caption = row.querySelector('.rule-caption');
+  if (caption) caption.textContent += ' — now pinned as a stored, asserted edge; will persist even if the source rule changes.';
+}
+
+/* ─── GLOBAL CHAT ─── */
+function toggleChat(open){
+  var panel = document.getElementById('chat-panel');
+  var fab = document.getElementById('chat-fab');
+  if (open) { panel.classList.add('open'); fab.classList.add('hidden'); }
+  else { panel.classList.remove('open'); fab.classList.remove('hidden'); }
+}
+function chatGoTo(screenName){
+  toggleChat(false);
+  showScreen(screenName);
+}
+function chatQuickAsk(chip){
+  var input = document.getElementById('chat-input');
+  input.value = chip.textContent;
+  sendChatMessage();
+}
+function appendChatMsg(html, who){
+  var body = document.getElementById('chat-body');
+  var div = document.createElement('div');
+  div.className = 'chat-msg ' + who;
+  div.innerHTML = html;
+  body.appendChild(div);
+  body.scrollTop = body.scrollHeight;
+  return div;
+}
+function escapeHtml(s){
+  var d = document.createElement('div'); d.textContent = s; return d.innerHTML;
+}
+function sendChatMessage(){
+  var input = document.getElementById('chat-input');
+  var text = input.value.trim();
+  if (!text) return;
+  appendChatMsg(escapeHtml(text), 'user');
+  input.value = '';
+  var body = document.getElementById('chat-body');
+  var typing = document.createElement('div');
+  typing.className = 'chat-typing';
+  typing.id = 'chat-typing';
+  typing.innerHTML = '<span></span><span></span><span></span>';
+  body.appendChild(typing);
+  body.scrollTop = body.scrollHeight;
+  setTimeout(function(){
+    var t = document.getElementById('chat-typing');
+    if (t) t.remove();
+    appendChatMsg(chatCannedReply(text), 'agent');
+  }, 900);
+}
+function chatCannedReply(question){
+  var q = question.toLowerCase();
+  if (q.indexOf('conflict') > -1) {
+    return 'There are 2 open conflicts right now — the highest-impact one is "Active Customer" (Finance vs Marketing). <span class="chat-link" onclick="chatGoTo(\'conflict\')">Open conflicts →</span>';
+  }
+  if (q.indexOf('queue') > -1 || q.indexOf('review') > -1 || q.indexOf('pending') > -1) {
+    return 'You have 7 items pending review — mostly AI-proposed relationships and one attribute change. <span class="chat-link" onclick="chatGoTo(\'queue\')">Open review queue →</span>';
+  }
+  if (q.indexOf('customer') > -1) {
+    return '"Customer" (Finance, certified): an individual or organisation that has entered into a commercial relationship and holds at least one active account. It has 12 attributes and 8 relationships. <span class="chat-link" onclick="chatGoTo(\'detail\')">View concept →</span>';
+  }
+  return 'I can look that up against the certified ontology and the Data Steward Agent\'s proposals. Try asking about a specific concept name, or say "show conflicts" / "what\'s pending".';
+}
+</script>
+</body>
+</html>
