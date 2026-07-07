@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Data Steward — Interaction Prototype v2</title>
+<style>
+  :root{
+    --blue:#2f6fed; --blue-dark:#1f4fc4; --blue-bg:#eef3ff;
+    --orange:#f59e0b; --orange-bg:#fffaf0; --orange-border:#fbd38d;
+    --ink:#1f2430; --muted:#6b7280; --line:#e5e7eb; --line-soft:#eef0f2;
+    --card:#ffffff; --page:#f4f5f7; --green:#16a34a; --red:#dc2626;
+    --violet:#6b3fd4; --violet-bg:#f2ecff; --violet-border:#ddd0ff;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--page);color:var(--ink);}
+  .app-shell{max-width:1180px;margin:0 auto;padding:20px 20px 60px;}
+
+  /* ---- toolbar ---- */
+  .toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:12px;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px;}
+  .toolbar h1{font-size:15px;margin:0;white-space:nowrap;}
+  .toolbar .sub{font-size:12px;color:var(--muted);}
+  .toolbar select{margin-left:auto;font-size:13px;padding:7px 10px;border-radius:8px;border:1px solid var(--line);background:#fff;min-width:320px;}
+  .navbtn{border:1px solid var(--line);background:#fff;border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px;color:var(--ink);}
+  .navbtn:hover{background:var(--blue-bg);border-color:var(--blue);}
+
+  .viewing-banner{display:flex;align-items:center;gap:10px;background:var(--blue-bg);border:1px solid #c7d9ff;color:var(--blue-dark);border-radius:10px;padding:10px 14px;margin-bottom:18px;font-size:13px;}
+  .viewing-banner b{font-weight:700;}
+  .viewing-banner .count{margin-left:auto;color:var(--muted);font-size:12px;}
+  .legend{font-size:11.5px;color:var(--muted);margin:-8px 0 16px;padding-left:2px;}
+  .legend .star{color:var(--violet);font-weight:700;}
+
+  /* ---- layout: mock panel + annotation rail ---- */
+  .stage{display:grid;grid-template-columns:440px 1fr;gap:34px;align-items:flex-start;}
+  @media (max-width:920px){.stage{grid-template-columns:1fr;}}
+
+  .flow{display:none;}
+  .flow.active{display:grid;grid-template-columns:440px 1fr;gap:34px;grid-column:1/-1;}
+  @media (max-width:920px){.flow.active{grid-template-columns:1fr;}}
+
+  /* ---- the mocked Data Steward panel (the real product surface — deliberately elevated) ---- */
+  .steward-panel{background:#fff;border:1px solid #cfd5df;border-radius:16px;box-shadow:0 20px 48px rgba(20,30,60,0.18), 0 3px 8px rgba(20,30,60,0.08);overflow:hidden;display:flex;flex-direction:column;min-height:560px;position:relative;}
+  .steward-panel::before{content:"";position:absolute;inset:0;border-radius:16px;border:1px solid rgba(107,63,212,0.10);pointer-events:none;}
+  .steward-header{display:flex;align-items:center;gap:8px;padding:14px 16px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,#f5f0ff 0%,#ffffff 100%);}
+  .steward-header .title{font-weight:700;font-size:14px;}
+  .steward-header .title::before{content:"✦";color:var(--violet);margin-right:7px;font-size:13px;}
+  .steward-header .chip{margin-left:8px;font-size:11px;background:var(--blue-bg);color:var(--blue-dark);border:1px solid #c7d9ff;padding:2px 8px;border-radius:999px;}
+  .steward-header .newchat{margin-left:auto;font-size:12px;color:var(--muted);}
+
+  .steward-body{flex:1;padding:16px;overflow-y:auto;font-size:13px;line-height:1.5;display:flex;flex-direction:column;gap:12px;background:#fbfcfe;}
+  .msg-user{align-self:flex-end;background:var(--blue);color:#fff;border-radius:12px 12px 3px 12px;padding:9px 13px;max-width:88%;box-shadow:0 1px 2px rgba(20,30,60,0.10);}
+  .msg-user .thumb{background:repeating-linear-gradient(45deg,#5b8cf0,#5b8cf0 6px,#7aa0f4 6px,#7aa0f4 12px);border-color:#5b8cf0;color:#fff;}
+  .msg-agent{align-self:flex-start;background:#fff;max-width:92%;border:1px solid #e7e9ee;border-radius:12px 12px 12px 3px;padding:10px 13px;box-shadow:0 1px 2px rgba(20,30,60,0.06);}
+  .msg-agent .stamp{font-size:11px;color:var(--muted);margin-top:4px;}
+
+  .chips-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;}
+  .sugg-chip{border:1px solid var(--blue);color:var(--blue);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:default;}
+
+  .plan-card{border:1px solid var(--orange-border);background:var(--orange-bg);border-radius:10px;padding:12px 14px;margin-top:4px;}
+  .plan-card h4{margin:0 0 8px;font-size:13px;}
+  .plan-card ul{margin:0 0 10px;padding-left:18px;font-size:12.5px;}
+  .plan-card li{margin-bottom:4px;}
+  .btn{border:none;border-radius:7px;padding:7px 14px;font-size:12.5px;font-weight:600;cursor:pointer;}
+  .btn-primary{background:var(--orange);color:#fff;}
+  .btn-primary.blue{background:var(--blue);}
+  .btn-link{background:none;color:var(--blue-dark);padding:7px 4px;text-decoration:underline;}
+  .btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink);}
+  .row-gap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+
+  .steward-composer{border-top:1px solid var(--line);padding:10px 12px;background:#fff;}
+  .composer-box{border:1px solid var(--line);border-radius:10px;padding:8px 10px;}
+  .composer-box .ph{color:#9aa1ac;font-size:13px;}
+  .composer-tools{display:flex;align-items:center;gap:8px;margin-top:8px;}
+  .icon-btn{width:28px;height:28px;border-radius:7px;border:1px solid var(--line);background:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+  .icon-btn.active{border-color:var(--blue);color:var(--blue);background:var(--blue-bg);}
+  .looking-at{font-size:11px;background:var(--blue-bg);color:var(--blue-dark);border:1px solid #c7d9ff;border-radius:999px;padding:3px 9px;}
+  .composer-send{margin-left:auto;width:30px;height:30px;border-radius:8px;background:var(--blue);color:#fff;border:none;cursor:pointer;}
+
+  /* ---- annotation rail (design notes — deliberately flat, secondary to the chat) ---- */
+  .annotations{background:#f7f8fa;border:1px dashed #d3d8e0;border-radius:10px;padding:16px 18px;font-size:13px;}
+  .anno-label{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:#9aa1ac;font-weight:700;margin-bottom:10px;}
+  .annotations h3{margin:0 0 4px;font-size:14px;}
+  .annotations .desc{color:var(--muted);font-size:12.5px;margin-bottom:14px;}
+  .annotations .origin{display:inline-block;font-size:11px;background:var(--violet-bg);color:var(--violet);border:1px solid var(--violet-border);border-radius:999px;padding:2px 9px;margin-bottom:12px;}
+  .callout{display:flex;gap:10px;padding:10px 0;border-top:1px solid #e3e6ea;}
+  .callout:first-of-type{border-top:none;}
+  .callout .num{flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--muted);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px;}
+  .callout .txt b{display:block;font-size:12.8px;margin-bottom:2px;}
+  .callout .txt span{font-size:12.5px;color:var(--muted);}
+  .highlight{outline:2px dashed var(--orange);outline-offset:2px;border-radius:8px;}
+
+  /* ---- flow-specific extras ---- */
+  .lib-panel{border:1px solid var(--line);border-radius:10px;margin:0 0 10px;background:#fafbfc;}
+  .lib-tabs{display:flex;gap:4px;padding:8px 8px 0;}
+  .lib-tab{font-size:12px;padding:6px 10px;border-radius:7px 7px 0 0;cursor:pointer;color:var(--muted);}
+  .lib-tab.active{background:#fff;color:var(--ink);font-weight:600;border:1px solid var(--line);border-bottom:none;}
+  .lib-search{margin:8px;padding:6px 8px;border:1px solid var(--line);border-radius:7px;font-size:12px;color:#9aa1ac;background:#fff;}
+  .lib-item{display:flex;align-items:center;gap:8px;padding:7px 10px;font-size:12.5px;border-top:1px solid var(--line-soft);}
+  .lib-item b{font-weight:600;font-size:12.5px;}
+  .lib-item span{color:var(--muted);font-size:11.5px;}
+  .lib-item .insert{margin-left:auto;font-size:11.5px;color:var(--blue);cursor:pointer;font-weight:600;}
+  .lib-save{padding:8px 10px;font-size:12px;color:var(--blue-dark);border-top:1px dashed var(--line);cursor:pointer;}
+
+  .cite{display:inline-block;background:var(--blue-bg);color:var(--blue-dark);border:1px solid #c7d9ff;border-radius:6px;padding:1px 6px;font-size:11px;cursor:pointer;margin-left:2px;}
+  .cite-snippet{display:none;margin-top:8px;background:#fafbfc;border:1px solid var(--line);border-left:3px solid var(--blue);border-radius:6px;padding:8px 10px;font-size:12px;color:var(--muted);}
+  .cite-snippet.show{display:block;}
+
+  .proposed-box{border:1px solid var(--line);border-radius:9px;padding:10px 12px;background:#fafbfc;position:relative;}
+  .proposed-box .lbl{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.03em;margin-bottom:4px;}
+  .pencil-btn{position:absolute;top:8px;right:8px;width:26px;height:26px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12px;}
+  .pencil-btn:hover{border-color:var(--blue);color:var(--blue);}
+  .edit-mode{display:none;}
+  .edit-mode.show{display:block;}
+  .view-mode.hide{display:none;}
+  textarea.edit-ta{width:100%;min-height:64px;border:1px solid var(--blue);border-radius:7px;padding:8px;font-size:12.5px;font-family:inherit;resize:vertical;}
+
+  .step-row{display:flex;align-items:flex-start;gap:8px;border:1px solid var(--line);border-radius:8px;padding:8px 10px;margin-bottom:6px;background:#fff;}
+  .step-row .drag{color:#c2c7cf;cursor:grab;padding-top:2px;}
+  .step-row .body{flex:1;}
+  .step-row .body b{font-size:12.5px;}
+  .step-row .body p{margin:2px 0 0;font-size:12px;color:var(--muted);}
+  .step-actions{display:flex;gap:4px;}
+  .mini-icon{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:11px;}
+  .badge-edited{font-size:10px;background:var(--blue-bg);color:var(--blue-dark);border-radius:999px;padding:1px 7px;margin-left:6px;}
+
+  .tabbar{display:flex;gap:6px;margin-bottom:10px;}
+  .tabbtn{font-size:12.5px;padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;cursor:pointer;}
+  .tabbtn.active{background:var(--blue);border-color:var(--blue);color:#fff;}
+  .field-lbl{font-size:11px;color:var(--muted);text-transform:uppercase;margin:10px 0 4px;}
+  .pill{display:inline-block;font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:4px 10px;margin-right:6px;margin-bottom:6px;background:#fff;}
+  .pill.sel{border-color:var(--blue);background:var(--blue-bg);color:var(--blue-dark);}
+  .radio-row{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;margin-bottom:8px;}
+  .run-card{border:1px solid var(--line);border-radius:8px;padding:9px 11px;margin-bottom:8px;background:#fff;}
+  .run-card .top{display:flex;align-items:center;gap:8px;}
+  .status{font-size:10.5px;font-weight:700;border-radius:999px;padding:2px 8px;}
+  .status.ok{background:#eafaf0;color:var(--green);}
+  .status.review{background:#fff7e6;color:#b45309;}
+  .status.fail{background:#fdeaea;color:var(--red);}
+  .run-card .meta{font-size:11.5px;color:var(--muted);margin-top:3px;}
+  .run-card .links{margin-top:6px;font-size:11.5px;}
+  .run-card .links a{color:var(--blue);text-decoration:none;margin-right:12px;font-weight:600;}
+
+  .thumb{width:120px;height:78px;border-radius:6px;border:1px solid var(--line);background:repeating-linear-gradient(45deg,#f4f5f7,#f4f5f7 6px,#eceef1 6px,#eceef1 12px);display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--muted);margin-bottom:6px;}
+
+  .barchart{display:flex;align-items:flex-end;gap:6px;height:70px;margin:8px 0;}
+  .barchart .bar{flex:1;background:var(--blue);border-radius:3px 3px 0 0;position:relative;}
+  .barchart .bar span{position:absolute;bottom:-16px;left:0;right:0;text-align:center;font-size:9.5px;color:var(--muted);}
+  .kpi-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px;}
+  .kpi{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff;}
+  .kpi b{font-size:15px;display:block;}
+  .kpi span{font-size:11px;color:var(--muted);}
+
+  .tour-card{border:1px solid var(--line);border-radius:10px;padding:14px;background:#fafbfc;}
+  .dots{display:flex;gap:6px;margin:10px 0;}
+  .dot{width:7px;height:7px;border-radius:50%;background:var(--line);}
+  .dot.on{background:var(--blue);}
+  .checklist-item{display:flex;align-items:center;gap:8px;padding:6px 0;font-size:12.5px;border-top:1px solid var(--line-soft);}
+  .checklist-item:first-of-type{border-top:none;}
+  .checkbox{width:15px;height:15px;border:1.5px solid var(--line);border-radius:4px;}
+
+  /* ---- research-enrichment extras (v2) ---- */
+  .prov-line{font-size:11.5px;color:var(--muted);margin-top:8px;}
+  .prov-line .lead{font-weight:600;color:var(--ink);}
+  .conf{font-size:10px;font-weight:700;border-radius:999px;padding:1px 7px;}
+  .conf.hi{background:#eafaf0;color:var(--green);}
+  .conf.med{background:#fff7e6;color:#b45309;}
+  .conf.lo{background:#fdeaea;color:var(--red);}
+  .thumbs{display:flex;gap:6px;margin-top:8px;align-items:center;}
+  .thumb-btn{width:30px;height:27px;border-radius:6px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:12px;}
+  .thumb-btn.sel-up{border-color:var(--green);background:#eafaf0;}
+  .thumb-btn.sel-down{border-color:var(--red);background:#fdeaea;}
+  .thumbs .flag{font-size:11.5px;color:var(--blue);cursor:pointer;margin-left:auto;font-weight:600;}
+  .progress-track{height:8px;border-radius:999px;background:var(--line);overflow:hidden;}
+  .progress-fill{height:100%;background:var(--blue);width:66%;}
+  .progress-label{font-size:11.5px;color:var(--muted);margin-top:5px;}
+  .nudge{display:flex;gap:10px;background:var(--orange-bg);border:1px solid var(--orange-border);border-radius:10px;padding:10px 12px;}
+  .nudge .ic{font-size:16px;line-height:1.2;}
+  .impact-list{border:1px solid var(--line);border-radius:8px;margin-top:8px;background:#fff;}
+  .impact-list .ii{display:flex;gap:8px;align-items:center;padding:7px 10px;font-size:12px;border-top:1px solid var(--line-soft);}
+  .impact-list .ii:first-child{border-top:none;}
+  .impact-list .ii .k{margin-left:auto;font-size:11px;color:var(--red);white-space:nowrap;}
+  .warn-head{display:flex;gap:8px;align-items:center;font-size:12.5px;font-weight:700;color:#b45309;margin-bottom:2px;}
+  .op-row{display:flex;gap:8px;align-items:center;font-size:12.5px;padding:6px 0;border-top:1px solid var(--line-soft);}
+  .op-row:first-child{border-top:none;}
+  .op-row .st{margin-left:auto;}
+  .hist-row{display:flex;gap:8px;align-items:flex-start;padding:10px 0;border-top:1px solid var(--line-soft);}
+  .hist-row:first-child{border-top:none;}
+  .hist-row .undo{margin-left:auto;font-size:11.5px;color:var(--blue);cursor:pointer;font-weight:600;white-space:nowrap;}
+  .ai-tag{font-size:10px;background:var(--violet-bg);color:var(--violet);border:1px solid var(--violet-border);border-radius:999px;padding:1px 6px;margin-left:6px;}
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <div class="toolbar">
+    <div>
+      <h1>Data Steward — Interaction Prototype v2</h1>
+      <div class="sub">Ondra · AI Steward improvements · original 8 proposals + research enrichment · scoped to the Steward panel only</div>
+    </div>
+    <button class="navbtn" id="prevBtn" title="Previous flow">‹</button>
+    <select id="flowSelect"></select>
+    <button class="navbtn" id="nextBtn" title="Next flow">›</button>
+  </div>
+
+  <div class="viewing-banner">
+    <span>Viewing:</span> <b id="viewingName"></b>
+    <span class="count" id="viewingCount"></span>
+  </div>
+  <div class="legend"><span class="star">✦</span> = new in v2, added from the top-tier agent research (2026-07-07). Flows 0–8 are unchanged from your original prototype.</div>
+
+  <div class="stage" id="stage"></div>
+
+</div>
+
+<script>
+const flows = [
+  {
+    id: "baseline",
+    name: "0 · Current state (baseline)",
+    note: "This is today's implementation, reconstructed from your screenshots. Every other flow in this prototype is a proposed change layered on top of this.",
+    callouts: [
+      ["No source control on knowledge", "Agent explicitly states it cannot read documentation, URLs, or files — only the live catalog and training knowledge."],
+      ["Plan is accept-all / decline-all", "The orange plan card only offers Execute Plan or Decline for the whole plan — no way to adjust a single step or a single proposed value."],
+      ["No memory of past runs", "Nothing in the panel shows whether this task has run before, on a schedule, or what the last outcome was."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">The delete action only removes the catalog entry, metadata, links, and lineage from Zeenea. The table will reappear if the scanner runs again unless excluded from scan configuration.<br><br><b>Recommendation:</b> before deleting, consider whether the intent is to remove it permanently or just suppress it from the catalog.
+          <div class="chips-row">
+            <span class="sugg-chip">Explore DP_test process</span>
+            <span class="sugg-chip">Explore public.data_vendor</span>
+            <span class="sugg-chip">Explore Monthly sales KPI</span>
+          </div>
+          <div class="stamp">Jun 29, 2026, 1:35 PM</div>
+        </div>
+        <div class="msg-user">Can you read Studio's technical documentation?</div>
+        <div class="msg-agent">No, I cannot. I don't have access to any external URLs, documentation sites, file systems, or web resources. My knowledge is limited to the active catalog and built-in training knowledge.
+          <div class="stamp">Jun 29, 2026, 1:39 PM</div>
+        </div>
+        <div class="plan-card">
+          <h4>Steward proposes a plan</h4>
+          <ul>
+            <li>Write a dataset description</li>
+            <li>Assign contacts</li>
+            <li>Fill required &amp; important properties</li>
+            <li>Link additional glossary terms (Implements)</li>
+          </ul>
+          <div class="row-gap"><button class="btn btn-primary">Execute Plan</button><button class="btn btn-link">Decline</button></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="icon-btn" style="margin-left:auto;width:auto;padding:0 10px;">Plan</button>
+          <button class="composer-send">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "prompts",
+    name: "1 · Reusable prompts",
+    note: "A prompt library lives in the composer so stewards can save, share, and re-run the tasks they repeat weekly instead of retyping them.",
+    callouts: [
+      ["Library icon in composer", "New icon opens a saved-prompt library without leaving the chat."],
+      ["Personal vs. team scope", "Tabs separate prompts you saved for yourself from ones your team lead has published — avoids one steward's shorthand confusing another."],
+      ["Save current draft", "Any task you type can be saved as a reusable prompt in one click, with variables like {dataset} inferred automatically."],
+      ["Open question", "Who can publish to 'Team prompts' — any steward, or only admins? Needs a review/approval step to avoid prompt sprawl."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="lib-panel highlight">
+          <div class="lib-tabs">
+            <div class="lib-tab active">My prompts</div>
+            <div class="lib-tab">Team prompts (12)</div>
+          </div>
+          <div class="lib-search">Search prompts…</div>
+          <div class="lib-item"><b>Improve completion for {dataset}</b><br><span>Used 34 times</span><span class="insert">Insert</span></div>
+          <div class="lib-item"><b>Summarize orphan datasets</b><br><span>Used 11 times</span><span class="insert">Insert</span></div>
+          <div class="lib-item"><b>Weekly stewardship digest for {business unit}</b><br><span>Used 8 times</span><span class="insert">Insert</span></div>
+          <div class="lib-save">+ Save current draft as a prompt</div>
+        </div>
+        <div class="msg-user">Improve completion for ACTUAL_SALES</div>
+        <div class="msg-agent">Inserted from your saved prompt <i>“Improve completion for {dataset}”</i>. Looking at ACTUAL_SALES now…
+          <div class="stamp">Jul 6, 2026, 9:02 AM</div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <button class="icon-btn active highlight" title="Prompt library">★</button>
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "docs",
+    name: "2 · Agent with access to technical documentation",
+    note: "Fixes the confirmed gap from the baseline transcript. Instead of refusing, the agent now answers real product questions about the Data Intelligence Platform — grounded in the docs and cited — rather than just listing which documents it has indexed.",
+    callouts: [
+      ["Answers, doesn't refuse", "The baseline agent says 'I can't access documentation'. Here it gives a direct, usable answer to a DIP how-to question."],
+      ["Cited, not listed", "The answer links to the specific doc section it came from — click the chip to see the exact passage. It grounds the claim without dumping a list of indexed sources on the user."],
+      ["Open question", "Docs change with every release — who owns re-indexing, and how do we prevent the agent citing a stale version of the guide?"]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="chip highlight">📚 Docs-aware · synced Jul 5</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">In the Data Intelligence Platform, how do I stop a deleted dataset from reappearing on the next scan?</div>
+        <div class="msg-agent highlight">Add the object's technical path to the connection's <b>exclusion list</b> <i>before</i> you delete the catalog entry. If you delete it first, the next scan re-ingests the object and re-creates the item. You'll find this per connection under <b>Scanning configuration</b>. <span class="cite" onclick="this.nextElementSibling.classList.toggle('show')">Admin Guide › Scanning</span>
+        <div class="cite-snippet">“To permanently exclude an object from re-ingestion, add its technical path to the connection's exclusion list before deleting the catalog entry — otherwise the next scan re-creates it.”</div>
+          <div class="stamp">Jul 6, 2026, 9:12 AM</div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "inline-edit",
+    name: "3 · Inline edit (pencil) on proposed changes",
+    note: "Today a proposal can only be executed or declined wholesale. Each proposed field gets its own pencil so a steward can correct one value without rejecting the whole plan.",
+    callouts: [
+      ["Pencil icon", "Sits on each proposed value, not just the plan as a whole — click it and the field becomes editable in place."],
+      ["View ↔ edit toggle", "Click the pencil below to see the interaction — this is real JS, not a static image."],
+      ["Save keeps provenance", "An edited value should stay flagged as 'steward-edited' vs. 'agent-proposed' in the audit trail — open question on how we surface that distinction later in the catalog item history."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">Here's the proposed description for ACTUAL_SALES:</div>
+        <div class="proposed-box highlight">
+          <div class="lbl">Proposed description</div>
+          <div class="view-mode" id="pv1">Table recording realized sales transactions sourced from Snowflake (ZEENEA_PS_TEST.DEMO_SCHEMA), used for Monthly Sales KPI reporting.</div>
+          <div class="edit-mode" id="pe1"><textarea class="edit-ta" id="pta1">Table recording realized sales transactions sourced from Snowflake (ZEENEA_PS_TEST.DEMO_SCHEMA), used for Monthly Sales KPI reporting.</textarea>
+            <div class="row-gap" style="margin-top:8px;"><button class="btn btn-primary blue" onclick="saveEdit1()">Save</button><button class="btn btn-ghost" onclick="cancelEdit1()">Cancel</button></div>
+          </div>
+          <button class="pencil-btn" id="pencilBtn1" onclick="toggleEdit1()">✎</button>
+        </div>
+        <div class="row-gap"><button class="btn btn-primary blue">Accept field</button><button class="btn btn-link">Reject field</button></div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "plan-edit",
+    name: "4 · Plan editing and adjustment",
+    note: "Beyond editing one field, stewards should be able to reorder, edit, remove, or add whole steps before a plan runs — this operates one level up from flow 3.",
+    callouts: [
+      ["Drag handle", "Reorder steps — e.g. assign contacts before writing a description that references the owner."],
+      ["Per-step pencil / trash", "Edit a step's intent in place, or drop a step you don't want executed at all."],
+      ["Add step", "Stewards can append a step the agent didn't think of, e.g. 'notify data owner'."],
+      ["Save vs. Execute", "Saving edits shouldn't silently execute — needs its own confirmation state, distinct from the original Execute Plan action."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">Here is the improvement plan for ACTUAL_SALES — edit before running:</div>
+        <div class="highlight" style="border-radius:10px;padding:2px;">
+          <div class="step-row"><span class="drag">⠿</span><div class="body"><b>1. Write a dataset description</b><p>Authored from name, source, and linked glossary term.</p></div><div class="step-actions"><button class="mini-icon">✎</button><button class="mini-icon">🗑</button></div></div>
+          <div class="step-row"><span class="drag">⠿</span><div class="body"><b>2. Assign contacts <span class="badge-edited">edited by you</span></b><p>Owner: Ondra Vesely (changed from auto-suggested peer match).</p></div><div class="step-actions"><button class="mini-icon">✎</button><button class="mini-icon">🗑</button></div></div>
+          <div class="step-row"><span class="drag">⠿</span><div class="body"><b>3. Fill required &amp; important properties</b><p>Application link + tags.</p></div><div class="step-actions"><button class="mini-icon">✎</button><button class="mini-icon">🗑</button></div></div>
+          <button class="btn btn-ghost" style="width:100%;margin-top:2px;">+ Add step</button>
+        </div>
+        <div class="row-gap"><button class="btn btn-ghost">Save changes</button><button class="btn btn-primary">Execute Plan</button><button class="btn btn-link">Decline</button></div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "scheduled",
+    name: "5 · Scheduled runs",
+    note: "Turns Steward from an on-demand tool into an ongoing check. Two views: setting up a schedule, and reviewing what happened on past runs.",
+    callouts: [
+      ["Approval mode is the key decision", "Default should be 'review before applying' — an unattended agent silently editing catalog data is a governance risk for a tool whose whole job is data governance."],
+      ["Run history, not just a toast", "Each run needs a durable record: what changed, what was flagged, and a link to the exact plan that executed — same plan-review UI as flow 4."],
+      ["Open question", "Who gets notified on a failed or 'needs review' run — the steward who scheduled it, or a shared channel? Undefined today."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="tabbar highlight">
+          <button class="tabbtn active" onclick="showTab('schedTab','historyTab',this)">Schedule</button>
+          <button class="tabbtn" onclick="showTab('historyTab','schedTab',this)">Run history</button>
+        </div>
+        <div id="schedTab">
+          <div class="field-lbl">Task</div>
+          <div class="pill sel">Improve completion for scoped datasets</div>
+          <div class="field-lbl">Scope</div>
+          <div class="pill sel">Datasets &lt; 50% completion</div><div class="pill">Business Unit: Sales</div>
+          <div class="field-lbl">Frequency</div>
+          <div class="pill sel">Weekly · Mondays 8:00 AM</div><div class="pill">Daily</div><div class="pill">Monthly</div>
+          <div class="field-lbl">Approval mode</div>
+          <div class="radio-row highlight"><input type="radio" checked><div><b>Require my review before applying</b> (recommended)<br><span style="color:var(--muted)">Steward builds the plan; you approve it from Run history.</span></div></div>
+          <div class="radio-row"><input type="radio"><div><b>Auto-apply changes</b><br><span style="color:var(--muted)">No human check — only after this task type has a clean track record.</span></div></div>
+          <button class="btn btn-primary blue">Save schedule</button>
+        </div>
+        <div id="historyTab" style="display:none">
+          <div class="run-card"><div class="top"><b>Jun 30, 2026 · 8:00 AM</b><span class="status ok">Success</span></div><div class="meta">12 datasets updated · 0 flagged</div><div class="links"><a href="#">View plan</a><a href="#">View diff</a></div></div>
+          <div class="run-card"><div class="top"><b>Jun 23, 2026 · 8:00 AM</b><span class="status review">Needs review</span></div><div class="meta">9 datasets updated · 3 flagged for missing owners</div><div class="links"><a href="#">Review now</a><a href="#">View plan</a></div></div>
+          <div class="run-card"><div class="top"><b>Jun 16, 2026 · 8:00 AM</b><span class="status fail">Failed</span></div><div class="meta">Connection to Snowflake timed out after step 2</div><div class="links"><a href="#">View log</a><a href="#">Retry</a></div></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Scope · Business Unit: Sales</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "image",
+    name: "6 · Support for image use in the agent",
+    note: "Stewards often hold context in a screenshot — an ER diagram, a source-system export — that today can't enter the conversation at all.",
+    callouts: [
+      ["Attach icon in composer", "Standard image upload, same place a file picker would live."],
+      ["Agent reasons over the image", "Response references specific entities and relationships visible in the diagram, not just the filename."],
+      ["Open question", "Screenshots can carry PII or sensitive schema detail — needs the same retention/redaction policy as any other uploaded content, and should not be used to train models."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">
+          <div class="thumb">ER_diagram.png</div>
+          Does this match our data model?
+        </div>
+        <div class="msg-agent highlight">I can see a star schema centered on <b>FACT_SALES</b>, joined to <b>DIM_CUSTOMER</b>, <b>DIM_PRODUCT</b>, and <b>DIM_DATE</b>. This matches the schema linked to ACTUAL_SALES, except <b>DIM_REGION</b> isn't in the catalog yet.
+          <div class="chips-row"><span class="sugg-chip">Create DIM_REGION dataset entry</span></div>
+          <div class="stamp">Jul 6, 2026, 9:20 AM</div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <button class="icon-btn highlight" title="Attach image">🖼</button>
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "logs",
+    name: "7 · Log access & 7-day activity visualization",
+    note: "Answers the concrete question 'what happened on the platform in the last 7 days' with a real chart instead of prose — needs read access to the audit log store.",
+    callouts: [
+      ["Activity bars", "One bar per day, sized by total catalog events — quick shape recognition before reading numbers."],
+      ["KPI breakdown", "Rolls the same window up by event type so a steward can jump straight to the category they care about."],
+      ["Open question", "Audit logs can be very high-volume — needs pagination/summarization strategy so this doesn't blow the agent's context window on active tenants."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">What happened on the platform in the last 7 days?</div>
+        <div class="msg-agent highlight">
+          Jun 29 – Jul 6, 2026:
+          <div class="barchart">
+            <div class="bar" style="height:30%"><span>Su</span></div>
+            <div class="bar" style="height:20%"><span>Mo</span></div>
+            <div class="bar" style="height:55%"><span>Tu</span></div>
+            <div class="bar" style="height:70%"><span>We</span></div>
+            <div class="bar" style="height:45%"><span>Th</span></div>
+            <div class="bar" style="height:85%"><span>Fr</span></div>
+            <div class="bar" style="height:25%"><span>Sa</span></div>
+          </div>
+          <div class="kpi-grid">
+            <div class="kpi"><b>142</b><span>items updated</span></div>
+            <div class="kpi"><b>18</b><span>datasets scanned</span></div>
+            <div class="kpi"><b>6</b><span>stewards active</span></div>
+            <div class="kpi"><b>3</b><span>glossary terms added</span></div>
+          </div>
+          <div class="stamp" style="margin-top:10px;"><a href="#" style="color:var(--blue)">Open full audit log ↗</a></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Catalog · Common</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "onboarding",
+    name: "8 · Onboarding for new stewards",
+    note: "First-run guidance inside the panel itself, plus a low-stakes starter checklist, so a new steward's first session isn't a blank composer and a guess.",
+    callouts: [
+      ["3-step guided tour", "Explains task list, proposing plans, and reviewing before applying — the three concepts every other flow in this prototype depends on."],
+      ["Starter checklist", "Concrete, low-risk first actions instead of an open-ended 'ask me anything'."],
+      ["Skip is always visible", "Experienced stewards moving to a new tenant shouldn't be forced through this."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="tour-card highlight">
+          <b>👋 Welcome — you're now a Data Steward</b>
+          <p style="font-size:12.5px;color:var(--muted);margin:8px 0;">Step 2 of 3: Steward reads gaps in your catalog and proposes a plan to fix them — nothing changes until you approve it.</p>
+          <div class="dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+          <div class="row-gap"><button class="btn btn-ghost">Back</button><button class="btn btn-primary blue">Next</button><span style="margin-left:auto;font-size:12px;color:var(--muted);cursor:pointer;">Skip tour</span></div>
+        </div>
+        <div class="lib-panel" style="margin-top:4px;">
+          <div style="padding:10px 12px 4px;font-weight:600;font-size:12.5px;">Starter checklist</div>
+          <div style="padding:0 12px 10px;">
+            <div class="checklist-item"><span class="checkbox"></span>Explore your first dataset</div>
+            <div class="checklist-item"><span class="checkbox"></span>Try “Improve completion for ACTUAL_SALES”</div>
+            <div class="checklist-item"><span class="checkbox"></span>Set up your first scheduled check</div>
+          </div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Catalog · Common</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "provenance",
+    name: "9 · Provenance on proposed values ✦",
+    origin: "Research finding A1 — highest-leverage trust feature",
+    note: "The single biggest gap: today a proposed value is an opaque assertion. Here every proposed value shows what evidence it was grounded in, and the agent flags the part it inferred. Distinct from flow 2, which cites external docs — this grounds the agent's own catalog edits.",
+    callouts: [
+      ["'Based on' evidence chips", "Each proposed value carries its grounding — schema, peer datasets, lineage. Click a chip to see the exact evidence, not just a paraphrase."],
+      ["Grounded vs. inferred", "The agent explicitly separates what it drew from a source from what it guessed — a reviewer can trust the first and scrutinise the second."],
+      ["Makes the review loop usable", "You can only edit-not-decline (flows 3 & 4) intelligently if you know why each value was suggested in the first place."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">Proposed description for ACTUAL_SALES:</div>
+        <div class="proposed-box highlight">
+          <div class="lbl">Proposed description</div>
+          <div>Table recording realized sales transactions sourced from Snowflake (ZEENEA_PS_TEST.DEMO_SCHEMA), used for Monthly Sales KPI reporting.</div>
+          <div class="prov-line">
+            <span class="lead">Based on:</span>
+            <span class="cite" onclick="this.nextElementSibling.classList.toggle('show')">Dataset schema</span>
+            <div class="cite-snippet">12 columns incl. SALE_ID, CUSTOMER_ID, AMOUNT, SALE_DATE. Primary key: SALE_ID.</div>
+            <span class="cite" onclick="this.nextElementSibling.classList.toggle('show')">3 peer datasets</span>
+            <div class="cite-snippet">Mirrors phrasing already used on BUDGET_SALES, FORECAST_SALES, ACTUAL_SALES_2024 in this catalog.</div>
+            <span class="cite" onclick="this.nextElementSibling.classList.toggle('show')">Lineage</span>
+            <div class="cite-snippet">Feeds the “Monthly Sales KPI” visualization downstream.</div>
+          </div>
+        </div>
+        <div class="msg-agent" style="font-size:12px;color:var(--muted)">⚠ The word “realized” is <b>inferred</b> — no source confirms it vs. “booked” or “invoiced”. Worth a check before accepting.</div>
+        <div class="row-gap"><button class="btn btn-primary blue">Accept</button><button class="btn btn-link">Reject</button></div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "confidence",
+    name: "10 · Confidence signaling ✦",
+    origin: "Research finding A2",
+    note: "Every proposal today is presented flat, as if equally certain. Here the agent surfaces confidence per field and — more importantly — routes on uncertainty: it proposes high-confidence fields directly and turns the low-confidence one into a question rather than a silent guess.",
+    callouts: [
+      ["Per-field confidence", "High / Medium / Low next to each field, so a reviewer knows where to spend their attention."],
+      ["Routes on uncertainty", "Low confidence doesn't produce a guess — it produces a question with quick-reply options. This is the behaviour the 2026 research emphasises over a raw confidence score."],
+      ["Open question", "Do we have a real confidence signal from the model/tooling, or would we be inventing a number? If invented, provenance (flow 9) is the honest substitute and this waits."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">Improvement plan for ACTUAL_SALES — with my confidence per field:</div>
+        <div class="highlight" style="border-radius:10px;padding:12px;background:#fff;border:1px solid var(--line);">
+          <div class="op-row">Description <span class="st"><span class="conf hi">High</span></span></div>
+          <div class="op-row">Required properties <span class="st"><span class="conf hi">High</span></span></div>
+          <div class="op-row">Glossary links <span class="st"><span class="conf med">Medium</span></span></div>
+          <div class="op-row">Owner / contact <span class="st"><span class="conf lo">Low</span></span></div>
+        </div>
+        <div class="nudge"><span class="ic">❓</span><div><b>Low confidence on owner.</b> Two people edit this dataset about equally, so rather than guess — who should own ACTUAL_SALES?
+          <div class="chips-row"><span class="sugg-chip">Ondra Vesely</span><span class="sugg-chip">Data Platform team</span><span class="sugg-chip">Decide later</span></div>
+        </div></div>
+        <div class="row-gap"><button class="btn btn-primary blue">Apply high-confidence fields</button><button class="btn btn-link">Review all</button></div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "clarify",
+    name: "11 · Clarifying question first ✦",
+    origin: "Research finding A3",
+    note: "The current flow jumps straight from request to plan, so an ambiguous ask produces a plan you then correct. Here the agent asks one targeted question first when the ambiguity would change the output — with quick replies so it stays fast.",
+    callouts: [
+      ["Ask when it changes the output", "'Sales' could mean three different scopes; guessing wrong wastes a whole plan. One question resolves it."],
+      ["Quick-reply chips", "The clarification is a single tap, not a typing exercise — keeps the interaction lightweight."],
+      ["Balance vs. chattiness", "Feature List v1 §2.6 flags the agent as too chatty. The rule must be 'ask only when ambiguity changes the result', not 'ask constantly'."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">Improve completion across Sales</div>
+        <div class="msg-agent highlight">Quick check before I build a plan — “Sales” could mean a few scopes. Which do you want?
+          <div class="chips-row">
+            <span class="sugg-chip">Just ACTUAL_SALES (current item)</span>
+            <span class="sugg-chip">All 14 datasets in Business Unit: Sales</span>
+            <span class="sugg-chip">Only Sales datasets &lt; 50% complete (6)</span>
+          </div>
+          <div class="stamp">Jul 6, 2026, 9:30 AM</div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "feedback",
+    name: "12 · Feedback & quality loop ✦",
+    origin: "Research finding A5 — most important for you as PM",
+    note: "There's no thumbs, no 'this was wrong', no correction capture today. Here every response is rate-able and flaggable, feeding a quality signal. This is how you *prove* the trust curve your AI-first roadmap depends on, rather than asserting it. Try the buttons — real JS.",
+    callouts: [
+      ["Per-response feedback", "Thumbs up/down and a flag on every suggestion — click 👎 below to see the correction note appear."],
+      ["Correction capture", "A down-vote optionally captures what was wrong, which is the raw material for improving the agent."],
+      ["Feeds a PM quality view", "Aggregate feedback answers 'is the agent getting better?' with data. For a trust-first rollout (v1 §6.1), this is the evidence conservative sectors will ask for."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent highlight">Proposed glossary link: ACTUAL_SALES <b>Implements</b> “Net Revenue”.
+          <div class="thumbs">
+            <button class="thumb-btn" onclick="pickThumb(this,'up')">👍</button>
+            <button class="thumb-btn" onclick="pickThumb(this,'down')">👎</button>
+            <span class="flag">⚑ Flag this suggestion</span>
+          </div>
+          <div id="fbNote" style="display:none;margin-top:8px;"><textarea class="edit-ta" placeholder="What was wrong? (optional — feeds the quality dashboard)"></textarea></div>
+          <div class="stamp">Jul 6, 2026, 9:34 AM</div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "progress",
+    name: "13 · Live execution progress ✦",
+    origin: "Research finding A7 — prerequisite for flow 5",
+    note: "Approve a plan today and you get the result with nothing in between. Here a long-running execution shows live progress with per-step status and a pause/abort control — non-optional the moment scheduled runs (flow 5) exist.",
+    callouts: [
+      ["Observable progress", "'Applying 8 of 12' with per-dataset status — the steward sees the run happening, not a spinner then a result."],
+      ["Pause / abort mid-run", "A real kill switch on an executing plan, not just 'Stop generating' on a text stream."],
+      ["Gates scheduled runs", "Unattended runs (flow 5) need this — you can't safely automate what you can't observe or stop."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-agent">Executing the approved plan across 12 datasets…</div>
+        <div class="highlight" style="border-radius:10px;padding:12px;background:#fff;border:1px solid var(--line);">
+          <div class="progress-track"><div class="progress-fill"></div></div>
+          <div class="progress-label">Applying 8 of 12 · ~15s remaining</div>
+          <div style="margin-top:10px;">
+            <div class="op-row">ACTUAL_SALES <span class="st"><span class="status ok">Done</span></span></div>
+            <div class="op-row">BUDGET_SALES <span class="st"><span class="status ok">Done</span></span></div>
+            <div class="op-row">FORECAST_SALES <span class="st"><span class="status review">In progress…</span></span></div>
+            <div class="op-row" style="color:var(--muted)">4 datasets queued</div>
+          </div>
+          <div class="row-gap" style="margin-top:10px;"><button class="btn btn-ghost">Pause</button><button class="btn btn-link" style="color:var(--red)">Abort run</button></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Scope · Business Unit: Sales</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "proactive",
+    name: "14 · Proactive in-session nudge ✦",
+    origin: "Research finding A8 — lightweight alternative to flow 5",
+    note: "The agent is purely reactive today — it acts only when asked. Here it surfaces a relevant issue unprompted when you open a degraded item. This is the cheap, opt-in cousin of scheduled runs: value now, without the auto-apply governance question.",
+    callouts: [
+      ["Context-triggered", "The nudge fires from the item you're viewing — it noticed the completion drop, you didn't have to ask."],
+      ["Opt-in and dismissible", "A suggestion, never an action — dismiss keeps the panel quiet for stewards who don't want nudges."],
+      ["Ships while flow 5 is gated", "Delivers proactivity without the scheduling infrastructure and the auto-apply trust decision it carries."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="nudge highlight"><span class="ic">📉</span><div><b>Heads up on ACTUAL_SALES.</b> Completion dropped from 60% → 40% since last week — three new columns were scanned in with no descriptions. Want me to look?
+          <div class="chips-row"><span class="sugg-chip">Yes, propose fixes</span><span class="sugg-chip">Show me what changed</span><span class="sugg-chip">Dismiss</span></div>
+        </div></div>
+        <div class="msg-agent" style="font-size:12px;color:var(--muted)">Nudges are opt-in and only appear for the item you're viewing — no scheduling required.</div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "impact",
+    name: "15 · Impact preview before execution ✦ (v1)",
+    origin: "Feature List v1 §1.2 (Aligned) — missing from the 8-item proposal",
+    note: "Already agreed internally on May 5 but absent from the current proposal. Before a high-impact action, show what it will affect using the linked-items graph — this is the content of a proper second confirmation, a peer to the flow 3 / 4 review work.",
+    callouts: [
+      ["Show the blast radius", "Deleting DP_test isn't isolated — 7 linked objects are affected, listed before anything happens."],
+      ["Built from the knowledge graph", "Uses existing lineage and Implements links to compute impact, exactly what v1 §1.2 describes."],
+      ["Pairs with double-confirmation", "This is the screen behind v1 §1.1's second confirm for destructive or bulk actions."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">Delete DP_test and its metadata</div>
+        <div class="msg-agent">Before I do — this isn't isolated. Here's what deleting DP_test touches:</div>
+        <div class="highlight" style="border-radius:10px;padding:12px;background:var(--orange-bg);border:1px solid var(--orange-border);">
+          <div class="warn-head">⚠ 7 linked objects will be affected</div>
+          <div class="impact-list">
+            <div class="ii">↓ Downstream: “Monthly Sales KPI” visualization <span class="k">breaks lineage</span></div>
+            <div class="ii">↓ 2 data processes consume DP_test <span class="k">orphaned</span></div>
+            <div class="ii">🔗 4 glossary Implements links <span class="k">removed</span></div>
+          </div>
+          <div class="row-gap" style="margin-top:10px;"><button class="btn btn-primary">Type DELETE to confirm</button><button class="btn btn-link">Cancel</button></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Data process · DP_test</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  },
+  {
+    id: "rollback",
+    name: "16 · Rollback / undo ✦ (v1)",
+    origin: "Feature List v1 §1.3 & §1.5 — missing from the 8-item proposal",
+    note: "Arguably the biggest missing safety net, and absent from the proposal. A governance agent that can write but not un-write is a hard sell to banking/healthcare. Every Steward action is tagged (also demonstrating v1 §1.5 AI-content tagging) so it's targetable for a one-click revert.",
+    callouts: [
+      ["Revert any Steward action", "Each entry in the activity trail has its own Undo — the steward isn't stuck with a bad change they already approved."],
+      ["Every action is tagged", "'Steward' and 'AI-authored' badges make agent changes easy to find and target (v1 §1.5) — the catalog-side twin of flow 9's provenance."],
+      ["Ideally a platform capability", "Open question from v1: is revert a platform-wide feature (needs Eng) or faked via action-tagging? Changes the effort by an order of magnitude."]
+    ],
+    body: `
+      <div class="steward-header"><span class="title">Data Steward</span><span class="newchat" style="margin-left:auto">New chat ▾</span></div>
+      <div class="steward-body">
+        <div class="msg-user">Undo the owner change I made this morning</div>
+        <div class="msg-agent">Here's the recent Steward activity on ACTUAL_SALES — each entry can be reverted:</div>
+        <div class="highlight" style="border:1px solid var(--line);border-radius:9px;padding:2px 12px;background:#fff;">
+          <div class="hist-row"><div><b>Owner set to Ondra Vesely</b><span class="ai-tag">Steward</span><br><span style="font-size:11.5px;color:var(--muted)">Today 9:02 AM · you approved</span></div><span class="undo">↺ Undo</span></div>
+          <div class="hist-row"><div><b>Description rewritten</b><span class="ai-tag">Steward · AI-authored</span><br><span style="font-size:11.5px;color:var(--muted)">Today 8:58 AM · you approved</span></div><span class="undo">↺ Undo</span></div>
+          <div class="hist-row"><div><b>3 glossary links added</b><span class="ai-tag">Steward</span><br><span style="font-size:11.5px;color:var(--muted)">Jul 5 · scheduled run</span></div><span class="undo">↺ Undo</span></div>
+        </div>
+      </div>
+      <div class="steward-composer">
+        <div class="composer-box"><span class="ph">Give Steward a task</span></div>
+        <div class="composer-tools">
+          <span class="looking-at">Dataset · ACTUAL_SALES</span>
+          <button class="composer-send" style="margin-left:auto">↑</button>
+        </div>
+      </div>
+    `
+  }
+];
+
+let current = 0;
+const select = document.getElementById('flowSelect');
+const stage = document.getElementById('stage');
+
+flows.forEach((f,i)=>{
+  const opt = document.createElement('option');
+  opt.value = i; opt.textContent = f.name;
+  select.appendChild(opt);
+
+  const sec = document.createElement('div');
+  sec.className = 'flow';
+  sec.id = 'flow-'+f.id;
+  sec.innerHTML = `
+    <div class="steward-panel">${f.body}</div>
+    <div class="annotations">
+      <div class="anno-label">Flow notes</div>
+      <h3>${f.name}</h3>
+      ${f.origin ? `<div class="origin">${f.origin}</div>` : ``}
+      <div class="desc">${f.note}</div>
+      ${f.callouts.map((c,ci)=>`<div class="callout"><div class="num">${ci+1}</div><div class="txt"><b>${c[0]}</b><span>${c[1]}</span></div></div>`).join('')}
+    </div>
+  `;
+  stage.appendChild(sec);
+});
+
+function render(){
+  document.querySelectorAll('.flow').forEach(el=>el.classList.remove('active'));
+  document.getElementById('flow-'+flows[current].id).classList.add('active');
+  select.value = current;
+  document.getElementById('viewingName').textContent = flows[current].name;
+  document.getElementById('viewingCount').textContent = `${current+1} of ${flows.length}`;
+}
+
+select.addEventListener('change', ()=>{ current = parseInt(select.value,10); render(); });
+document.getElementById('prevBtn').addEventListener('click', ()=>{ current = (current-1+flows.length)%flows.length; render(); });
+document.getElementById('nextBtn').addEventListener('click', ()=>{ current = (current+1)%flows.length; render(); });
+
+render();
+
+// flow 3 interaction: inline edit toggle
+function toggleEdit1(){
+  document.getElementById('pv1').classList.add('hide');
+  document.getElementById('pe1').classList.add('show');
+}
+function cancelEdit1(){
+  document.getElementById('pv1').classList.remove('hide');
+  document.getElementById('pe1').classList.remove('show');
+}
+function saveEdit1(){
+  document.getElementById('pv1').textContent = document.getElementById('pta1').value;
+  cancelEdit1();
+}
+
+// flow 5 interaction: schedule / history tabs
+function showTab(showId, hideId, btn){
+  document.getElementById(showId).style.display = '';
+  document.getElementById(hideId).style.display = 'none';
+  btn.parentElement.querySelectorAll('.tabbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+// flow 13 interaction: feedback thumbs
+function pickThumb(btn, dir){
+  const wrap = btn.parentElement;
+  wrap.querySelectorAll('.thumb-btn').forEach(b=>b.classList.remove('sel-up','sel-down'));
+  btn.classList.add(dir === 'up' ? 'sel-up' : 'sel-down');
+  const note = document.getElementById('fbNote');
+  if(note) note.style.display = (dir === 'down') ? 'block' : 'none';
+}
+</script>
+</body>
+</html>
